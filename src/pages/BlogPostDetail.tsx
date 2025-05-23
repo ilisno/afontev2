@@ -160,12 +160,12 @@ const BlogPostDetail: React.FC = () => {
               Par <span className="font-semibold">{post.author?.name || 'Auteur inconnu'}</span> le {formattedDate}
             </div>
 
-            {/* Display Main Image - Centered and smaller */}
+            {/* Display Main Image - Centered and responsive */}
             {post.mainImage?.asset?.url && (
                 <img
                   src={post.mainImage.asset.url}
                   alt={post.mainImage.alt || post.title}
-                  className="mx-auto max-w-xl h-auto object-cover rounded-md mb-8" // Added mx-auto, max-w-xl
+                  className="mx-auto w-full max-w-full h-auto object-cover rounded-md mb-8" // Changed max-w-xl to max-w-full and added w-full
                 />
               )}
 
