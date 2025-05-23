@@ -30,13 +30,14 @@ const BlogPostDetail: React.FC = () => {
           _id,
           title,
           slug,
+          publishedAt, // Ensure publishedAt is fetched
           body,
           mainImage{
             asset->{url},
             alt
           },
           "categories": categories[]->title,
-          "author": author->{name, image}
+          "author": author->{name, image} // Ensure author name is fetched
         }`;
         const params = { slug: postSlug };
         console.log("[BlogPostDetail] Fetching post with query:", query, "and params:", params);
@@ -138,6 +139,12 @@ const BlogPostDetail: React.FC = () => {
 
   // If post is loaded and available, render the post details
   console.log("[BlogPostDetail] Rendering: Post available.", post);
+
+  // Format the date
+  const formattedDate = post.publishedAt
+    ? new Date(post.publishedAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
+    : 'Date inconnue';
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100"> {/* This div provides the grey background */}
       <Header />
@@ -146,7 +153,12 @@ const BlogPostDetail: React.FC = () => {
         {/* Card wrapping the main article content */}
         <Card className="w-full max-w-3xl shadow-lg"> {/* Added max-w-3xl and shadow */}
           <CardContent className="p-6"> {/* Added padding inside the card */}
-            <h1 className="text-4xl font-bold mb-8 text-gray-800 text-center">{post.title}</h1>
+            <h1 className="text-4xl font-bold mb-4 text-gray-800 text-center">{post.title}</h1>
+
+            {/* Author and Date */}
+            <div className="text-center text-gray-600 text-sm mb-8"> {/* Added margin-bottom */}
+              Par <span className="font-semibold">{post.author?.name || 'Auteur inconnu'}</span> le {formattedDate}
+            </div>
 
             {/* Display Main Image - Centered and smaller */}
             {post.mainImage?.asset?.url && (
