@@ -55,7 +55,8 @@ const Popup: React.FC<PopupProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] p-6 text-center">
+      {/* Adjusted className for DialogContent */}
+      <DialogContent className="w-full max-w-sm sm:max-w-[425px] p-6 text-center">
         <DialogHeader>
           {/* Only show image if imageSrc is provided */}
           {imageSrc && (
