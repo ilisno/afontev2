@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
-import MonEspacePreviewTable from './MonEspacePreviewTable'; // Import the preview table component
+// Removed: import MonEspacePreviewTable from './MonEspacePreviewTable'; // Import the preview table component
 
 interface PopupProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ interface PopupProps {
   primaryButtonAction: () => void | string; // Can be a function or a link path
   secondaryButtonText?: string;
   secondaryButtonAction?: () => void | string; // Can be a function or a link path
-  showPreviewTable?: boolean; // New prop to conditionally show the table
+  // Removed: showPreviewTable?: boolean; // New prop to conditionally show the table
 }
 
 const Popup: React.FC<PopupProps> = ({
@@ -29,7 +29,7 @@ const Popup: React.FC<PopupProps> = ({
   primaryButtonAction,
   secondaryButtonText,
   secondaryButtonAction,
-  showPreviewTable, // Destructure the new prop
+  // Removed: showPreviewTable, // Destructure the new prop
 }) => {
 
   const handlePrimaryAction = () => {
@@ -57,21 +57,13 @@ const Popup: React.FC<PopupProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] p-6 text-center">
         <DialogHeader>
-          {/* Only show image if imageSrc is provided AND we are NOT showing the preview table */}
-          {imageSrc && !showPreviewTable && (
+          {/* Only show image if imageSrc is provided */}
+          {imageSrc && (
             <img src={imageSrc} alt={imageAlt || title} className="mx-auto mb-4 max-h-48 object-contain" />
           )}
           <DialogTitle className="text-2xl font-bold text-gray-800">{title}</DialogTitle>
-          {/* Conditionally render description or preview table */}
-          {showPreviewTable ? (
-             // Render the preview table component
-             <div className="mt-4"> {/* Add some top margin */}
-                <MonEspacePreviewTable />
-             </div>
-          ) : (
-             // Render the description if no preview table is requested
-             description && <DialogDescription className="text-gray-600 mt-2">{description}</DialogDescription>
-          )}
+          {/* Always render the description if it exists */}
+          {description && <DialogDescription className="text-gray-600 mt-2">{description}</DialogDescription>}
         </DialogHeader>
         {/* Removed the empty grid div */}
         <DialogFooter className="flex flex-col sm:flex-row sm:justify-center gap-3 mt-4">
