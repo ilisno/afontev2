@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button'; // Using shadcn Button
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Using shadcn Card
 import { DollarSign, Target, Clock, LineChart, Zap, Heart, Scale, Dumbbell } from 'lucide-react'; // Importing icons
-import MonEspacePreviewTable from '@/components/MonEspacePreviewTable'; // Import the new component
+// Removed: import MonEspacePreviewTable from '@/components/MonEspacePreviewTable'; // Import the new component
 import StrengthProgressChart from '@/components/StrengthProgressChart'; // Import the new chart component
 
 const Index: React.FC = () => {
@@ -42,17 +42,17 @@ const Index: React.FC = () => {
 
         {/* Mon Espace Static Preview Section */}
         <section className="mt-16 w-full max-w-4xl text-center">
-            {/* Title and description for the table preview */}
+            {/* Title and description for the chart */}
             <h2 className="text-3xl font-bold text-gray-800 mb-8">
-                Votre programme basé sur les dernière études scientifiques ! {/* Updated heading text */}
+                Suivez l'évolution de vos performances ! {/* Updated heading text */}
             </h2>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                 Enregistrez vos performances, suivez l'évolution de vos charges et restez motivé avec votre historique d'entraînement.
             </p>
-            {/* Render the table preview component */}
-            <div className="w-full flex justify-center mb-12"> {/* Wrapper to center the card, increased mb */}
+            {/* Removed: Render the table preview component */}
+            {/* <div className="w-full flex justify-center mb-12">
                <MonEspacePreviewTable />
-            </div>
+            </div> */}
 
             {/* Title specifically for the chart */}
             <h3 className="text-2xl font-bold text-gray-800 mb-8"> {/* Changed to h3 and slightly smaller */}
