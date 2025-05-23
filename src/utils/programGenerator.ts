@@ -132,6 +132,15 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
   // Filter all exercises by available equipment once
   const availableExercises = filterByEquipment(allExercises, materiel);
 
+  // Initialize the program structure
+  const program: Program = {
+      title: "", // Will be set based on objective
+      description: "", // Will be set based on objective
+      is531: false, // Default to false
+      weeks: [],
+  };
+
+
   // --- 5/3/1 Logic ---
   if (objectif === "Powerlifting" || objectif === "Powerbuilding") {
       // Ensure 1RMs are available (should be handled by Zod validation in component, but defensive check)
@@ -146,6 +155,11 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                weeks: []
            };
       }
+
+      program.title = `Programme 5/3/1 - ${objectif}`;
+      program.description = `Programme basé sur la méthode 5/3/1 de Jim Wendler pour ${joursEntrainement} jours/semaine.`;
+      program.is531 = true;
+
 
       // Calculate Training Max (TM) for each lift
       const tmSquat = roundToNearest2_5(squat1RM * 0.9);
@@ -167,13 +181,6 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           { week: 3, reps: "5/3/1", percentages: [0.75, 0.85, 0.95], amrapSet: 3 }, // 1+
           { week: 4, reps: "5", percentages: [0.40, 0.50, 0.60], amrapSet: null }, // Deload
       ];
-
-      const program531: Program = {
-          title: `Programme 5/3/1 - ${objectif}`,
-          description: `Programme basé sur la méthode 5/3/1 de Jim Wendler pour ${joursEntrainement} jours/semaine.`,
-          is531: true,
-          weeks: [],
-      };
 
       // Define main lifts order for splitting
       const mainLifts = ["Squat barre", "Développé couché", "Soulevé de terre roumain", "Développé militaire barre"]; // Use updated names
@@ -270,7 +277,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                   const maxAccessoriesPerDay = 4; // Limit total accessories
 
                   // Helper to add accessory if possible
-                  const addAccessoryIfPossible = (acc: Exercise) => {
+                  const addExerciseIfPossible = (acc: Exercise) => {
                       if (accessoriesAddedCount >= maxAccessoriesPerDay || addedAccessoryNames.has(acc.name)) {
                           return false;
                       }
@@ -290,25 +297,32 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                   };
 
                   // Add a few secondary compounds
-                  availableSecondaryCompounds.filter(acc => !mainLifts.includes(acc.name)).slice(0, 1).forEach(addAccessoryIfPossible);
+                  availableSecondaryCompounds.filter(acc => !mainLifts.includes(acc.name)).slice(0, 1).forEach(addExerciseIfPossible);
 
                   // Add a few heavy isolations
-                  availableHeavyIsolations.slice(0, 1).forEach(addAccessoryIfPossible);
+                  availableHeavyIsolations.slice(0, 1).forEach(addExerciseIfPossible);
 
                   // Add a few light isolations
-                  availableLightIsolations.slice(0, 2).forEach(addAccessoryIfPossible);
+                  availableLightIsolations.slice(0, 2).forEach(addExerciseIfPossible);
 
               }
 
               week.days.push(day);
           }
-          program531.weeks.push(week);
+          program.weeks.push(week); // Push the generated week to the program
       }
 
-      return program531;
+      // Return the populated 5/3/1 program
+      return program;
   }
 
   // --- Existing Generation Logic (for other objectives) ---
+  // This block runs if the objective is NOT Powerlifting or Powerbuilding
+
+  program.title = `Programme ${objectif} - ${joursEntrainement} jours/semaine`;
+  program.description = `Programme personnalisé pour votre objectif de ${objectif}.`;
+
+
   const baseReps = objectif === "Sèche / Perte de Gras" ? "12-15" : "8-12"; // Simplified reps
   const baseSets = 3; // Use number for calculations
 
@@ -390,7 +404,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           return true; // Exercise added
       };
 
-      // Filter available exercises by target muscle groups for today
+      // Filter available exercises for today by target muscle groups
       const availableExercisesForToday = filterByMuscleGroups(availableExercises, targetMuscleGroups);
 
       // Categorize available exercises for today based on the new categories
@@ -451,8 +465,9 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
       week.days.push(day);
     }
-    program.weeks.push(week);
+    program.weeks.push(week); // Push the generated week to the program
   }
 
+  // Return the populated program (for non-5/3/1 objectives)
   return program;
 };
