@@ -9,11 +9,12 @@ import ProgrammeGenerator from "./pages/ProgrammeGenerator";
 import Blog from "./pages/Blog";
 import BlogPostDetail from "./pages/BlogPostDetail";
 import CoachVirtuel from "./pages/CoachVirtuel";
-import MonEspace from "./pages/MonEspace"; // Import MonEspace
-import Login from "./pages/Login"; // Import Login page
+import MonEspace from "./pages/MonEspace";
+import Login from "./pages/Login";
+import Tarifs from "./pages/Tarifs"; // Import the new Tarifs page
 import { PopupProvider } from "./contexts/PopupContext";
-import { supabase } from "@/integrations/supabase/client"; // Import Supabase client
-import { SessionContextProvider, useSession } from '@supabase/auth-helpers-react'; // Import SessionContextProvider and useSession
+import { supabase } from "@/integrations/supabase/client";
+import { SessionContextProvider, useSession } from '@supabase/auth-helpers-react';
 
 const queryClient = new QueryClient();
 
@@ -23,12 +24,13 @@ const AuthRedirectHandler = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const publicPaths = ['/', '/programme', '/blog', '/coach-virtuel']; // Define public paths
+  // Add '/tarifs' to public paths
+  const publicPaths = ['/', '/programme', '/blog', '/coach-virtuel', '/tarifs'];
   // Add dynamic blog post paths to public paths
-  if (location.pathname.match(/^\/[^/]+\/[^/]+$/)) { // Basic regex for /category/post
-      // This is a blog post detail page, it should be public
-  } else if (!publicPaths.includes(location.pathname) && !session && location.pathname !== '/login') {
-      // If not a public path, not logged in, and not already on the login page, redirect to login
+  const isBlogPost = location.pathname.match(/^\/[^/]+\/[^/]+$/); // Basic regex for /category/post
+
+  if (!publicPaths.includes(location.pathname) && !isBlogPost && !session && location.pathname !== '/login') {
+      // If not a public path, not a blog post, not logged in, and not already on the login page, redirect to login
       console.log(`Redirecting to /login from ${location.pathname} (no session)`);
       navigate('/login', { replace: true });
   } else if (session && location.pathname === '/login') {
@@ -60,8 +62,9 @@ const App = () => (
                 {/* Route for individual blog posts */}
                 <Route path="/:categorySlug/:postSlug" element={<BlogPostDetail />} />
                 <Route path="/coach-virtuel" element={<CoachVirtuel />} />
-                <Route path="/mon-espace" element={<MonEspace />} /> {/* Route for Mon Espace */}
-                <Route path="/login" element={<Login />} /> {/* Route for Login */}
+                <Route path="/mon-espace" element={<MonEspace />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/tarifs" element={<Tarifs />} /> {/* Add the new Tarifs route */}
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
