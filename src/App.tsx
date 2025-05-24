@@ -11,7 +11,9 @@ import BlogPostDetail from "./pages/BlogPostDetail";
 import CoachVirtuel from "./pages/CoachVirtuel";
 import MonEspace from "./pages/MonEspace";
 import Login from "./pages/Login";
-import Tarifs from "./pages/Tarifs"; // Import the new Tarifs page
+import Tarifs from "./pages/Tarifs";
+import Merci1 from "./pages/Merci1"; // Import Merci1
+import Merci2 from "./pages/Merci2"; // Import Merci2
 import { PopupProvider } from "./contexts/PopupContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SessionContextProvider, useSession } from '@supabase/auth-helpers-react';
@@ -24,8 +26,8 @@ const AuthRedirectHandler = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Add '/tarifs' to public paths
-  const publicPaths = ['/', '/programme', '/blog', '/coach-virtuel', '/tarifs'];
+  // Add '/merci1' and '/merci2' to public paths
+  const publicPaths = ['/', '/programme', '/blog', '/coach-virtuel', '/tarifs', '/merci1', '/merci2'];
   // Add dynamic blog post paths to public paths
   const isBlogPost = location.pathname.match(/^\/[^/]+\/[^/]+$/); // Basic regex for /category/post
 
@@ -64,7 +66,9 @@ const App = () => (
                 <Route path="/coach-virtuel" element={<CoachVirtuel />} />
                 <Route path="/mon-espace" element={<MonEspace />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/tarifs" element={<Tarifs />} /> {/* Add the new Tarifs route */}
+                <Route path="/tarifs" element={<Tarifs />} />
+                <Route path="/merci1" element={<Merci1 />} /> {/* Add Merci1 route */}
+                <Route path="/merci2" element={<Merci2 />} /> {/* Add Merci2 route */}
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
