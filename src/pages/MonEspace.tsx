@@ -476,7 +476,7 @@ const MonEspace: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Header />
       <main className={cn(
-        "flex-grow py-12 flex justify-center",
+        "flex-grow py-12 flex flex-col items-center", // Added flex-col items-center for centering the card and button
         isMobile && selectedUserProgram ? "px-0" : "container mx-auto px-4" // Remove container/px-4 on mobile when program is selected
       )}>
         <Card className={cn(
@@ -549,7 +549,7 @@ const MonEspace: React.FC = () => {
                                                         <div key={setIndex} className="flex items-center space-x-2">
                                                            <span className="font-semibold flex-shrink-0">Série {setIndex + 1}:</span>
                                                            <Input
-                                                              type="text"
+                                                              type="text" // Use text to allow ranges like "8-12"
                                                               placeholder={placeholderReps} // Use program reps or 5/3/1 specific reps
                                                               value={exerciseData.sets[setIndex]?.reps || ''}
                                                               onChange={(e) => handleWorkoutInputChange(exercise.name, setIndex, 'reps', e.target.value)}
@@ -802,6 +802,18 @@ const MonEspace: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Stripe Billing Portal Button - Shown only when logged in */}
+        {session && (
+            <div className="mt-8 text-center"> {/* Added margin-top and centered */}
+                <Button asChild className="bg-gray-800 text-white hover:bg-gray-700 text-lg py-6 px-8 rounded-md font-semibold shadow-lg transition-colors duration-300">
+                    <a href="https://billing.stripe.com/p/login/fZu28rcc37c200Xepa87K00" target="_blank" rel="noopener noreferrer">
+                        Gérer mon abonnement Stripe
+                    </a>
+                </Button>
+            </div>
+        )}
+
       </main>
       <Footer />
     </div>
