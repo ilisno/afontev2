@@ -805,10 +805,10 @@ const MonEspace: React.FC = () => {
 
         {/* Stripe Billing Portal Button - Shown only when logged in */}
         {session && (
-            <div className="mt-8 text-center"> {/* Added margin-top and centered */}
-                <Button asChild className="bg-gray-800 text-white hover:bg-gray-700 text-lg py-6 px-8 rounded-md font-semibold shadow-lg transition-colors duration-300">
+            <div className="mt-8 text-center w-full max-w-3xl"> {/* Added w-full max-w-3xl to align with card */}
+                <Button asChild variant="link" className="text-gray-600 hover:underline text-sm"> {/* Changed variant to link, adjusted text size and color */}
                     <a href="https://billing.stripe.com/p/login/fZu28rcc37c200Xepa87K00" target="_blank" rel="noopener noreferrer">
-                        Gérer mon abonnement Stripe
+                        Gérer mon abonnement
                     </a>
                 </Button>
             </div>
