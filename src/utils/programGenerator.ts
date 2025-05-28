@@ -17,35 +17,31 @@ const programFormSchemaForGenerator = z.object({
   priorityMuscles: z.array(z.string()).optional(),
   // New field for priority exercises
   priorityExercises: z.array(z.string()).optional(),
+  // New field for selected main lifts
+  selectedMainLifts: z.array(z.string()).optional(),
 }).superRefine((data, ctx) => {
     // Custom validation: If objective is Powerlifting or Powerbuilding, 1RM fields are required and > 0
     if (data.objectif === "Powerlifting" || data.objectif === "Powerbuilding") {
-        if (!data.squat1RM || data.squat1RM <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Veuillez entrer votre 1RM au Squat (doit être > 0).",
-                path: ['squat1RM'],
-            });
-        }
-        if (!data.bench1RM || data.bench1RM <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Veuillez entrer votre 1RM au Développé Couché (doit être > 0).",
-                path: ['bench1RM'],
-            });
-        }
-        if (!data.deadlift1RM || data.deadlift1RM <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Veuillez entrer votre 1RM au Soulevé de Terre (doit être > 0).",
-                path: ['deadlift1RM'],
-            });
-        }
-        if (!data.ohp1RM || data.ohp1RM <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Veuillez entrer votre 1RM à l'Overhead Press (doit être > 0).",
-                path: ['ohp1RM'],
+        const mainLiftsToCheck = [
+            { field: "squat1RM", name: "Squat barre", label: "Squat" },
+            { field: "bench1RM", name: "Développé couché", label: "Développé Couché" },
+            { field: "deadlift1RM", name: "Soulevé de terre", label: "Soulevé de Terre" },
+            { field: "ohp1RM", name: "Développé militaire barre", label: "Overhead Press" },
+        ];
+
+        // If specific lifts are selected, their corresponding 1RMs are required.
+        if (data.selectedMainLifts && data.selectedMainLifts.length > 0) {
+            mainLiftsToCheck.forEach(liftInfo => {
+                if (data.selectedMainLifts?.includes(liftInfo.name)) {
+                    const rmField = liftInfo.field as keyof typeof data;
+                    if (!data[rmField] || (data[rmField] as number) <= 0) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: `Veuillez entrer votre 1RM au ${liftInfo.label} (doit être > 0).`,
+                            path: [rmField],
+                        });
+                    }
+                }
             });
         }
     }
@@ -184,7 +180,7 @@ const shuffleArray = <T>(array: T[]): T[] => {
 
 // --- Client-Side Program Generation Logic ---
 export const generateProgramClientSide = (values: ProgramFormData): Program => {
-  const { objectif, experience, split, joursEntrainement, materiel, dureeMax, squat1RM, bench1RM, deadlift1RM, ohp1RM, priorityMuscles, priorityExercises } = values; // Destructure new field
+  const { objectif, experience, split, joursEntrainement, materiel, dureeMax, squat1RM, bench1RM, deadlift1RM, ohp1RM, priorityMuscles, priorityExercises, selectedMainLifts } = values; // Destructure new field
 
   // Filter all exercises by available equipment once
   const availableExercises = filterByEquipment(allExercises, materiel);
@@ -205,17 +201,25 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
   // --- 5/3/1 Logic (for Powerlifting and Powerbuilding) ---
   if (objectif === "Powerlifting" || objectif === "Powerbuilding") {
       // Ensure 1RMs are available (should be handled by Zod validation in component, but defensive check)
-      if (squat1RM === null || bench1RM === null || deadlift1RM === null || ohp1RM === null ||
-          squat1RM <= 0 || bench1RM <= 0 || deadlift1RM <= 0 || ohp1RM <= 0) {
-          // This case should ideally not happen if form validation works, but return a minimal program or throw error
-          console.error("Missing or invalid 1RM values for 5/3/1 program generation.");
-           return {
-               title: "Erreur de Génération",
-               description: "Impossible de générer le programme 5/3/1. Veuillez vérifier vos valeurs de 1RM.",
-               is531: true,
-               weeks: []
-           };
+      if (selectedMainLifts && selectedMainLifts.length > 0) { // Only check if lifts are selected
+          if (selectedMainLifts.includes("Squat barre") && (squat1RM === null || squat1RM <= 0)) {
+              console.error("Missing or invalid Squat 1RM for 5/3/1 program generation.");
+              // Fallback or throw error
+          }
+          if (selectedMainLifts.includes("Développé couché") && (bench1RM === null || bench1RM <= 0)) {
+              console.error("Missing or invalid Bench 1RM for 5/3/1 program generation.");
+              // Fallback or throw error
+          }
+          if (selectedMainLifts.includes("Soulevé de terre") && (deadlift1RM === null || deadlift1RM <= 0)) {
+              console.error("Missing or invalid Deadlift 1RM for 5/3/1 program generation.");
+              // Fallback or throw error
+          }
+          if (selectedMainLifts.includes("Développé militaire barre") && (ohp1RM === null || ohp1RM <= 0)) {
+              console.error("Missing or invalid OHP 1RM for 5/3/1 program generation.");
+              // Fallback or throw error
+          }
       }
+
 
       program.title = `Programme 5/3/1 - ${objectif}`;
       program.description = `Programme basé sur la méthode 5/3/1 de Jim Wendler pour ${joursEntrainement} jours/semaine.`;
@@ -223,16 +227,11 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
 
       // Calculate Training Max (TM) for each lift
-      const tmSquat = roundToNearest2_5(squat1RM * 0.9);
-      const tmBench = roundToNearest2_5(bench1RM * 0.9);
-      const tmDeadlift = roundToNearest2_5(deadlift1RM * 0.9);
-      const tmOhp = roundToNearest2_5(ohp1RM * 0.9);
-
       const trainingMaxes = {
-          "Squat barre": tmSquat, // Use updated names
-          "Développé couché": tmBench,
-          "Soulevé de terre": tmDeadlift, // Use updated names
-          "Développé militaire barre": tmOhp, // Use updated names
+          "Squat barre": squat1RM ? roundToNearest2_5(squat1RM * 0.9) : 0,
+          "Développé couché": bench1RM ? roundToNearest2_5(bench1RM * 0.9) : 0,
+          "Soulevé de terre": deadlift1RM ? roundToNearest2_5(deadlift1RM * 0.9) : 0,
+          "Développé militaire barre": ohp1RM ? roundToNearest2_5(ohp1RM * 0.9) : 0,
       };
 
       // 5/3/1 percentages and reps per week
@@ -243,8 +242,25 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           { week: 4, percentages: [0.40, 0.50, 0.60], reps: ["5", "5", "5"], amrapSetIndex: null }, // Deload
       ];
 
-      // Define main lifts order for splitting
-      const mainLifts = ["Squat barre", "Développé couché", "Soulevé de terre", "Développé militaire barre"]; // Use updated names
+      // Define all possible main lifts
+      const allPossibleMainLifts = ["Squat barre", "Développé couché", "Soulevé de terre", "Développé militaire barre"];
+      // Filter main lifts based on user selection
+      const mainLiftsForCycle = selectedMainLifts && selectedMainLifts.length > 0
+          ? allPossibleMainLifts.filter(lift => selectedMainLifts.includes(lift))
+          : []; // If no specific lifts are selected, then no main lifts are included.
+
+      // Distribute main lifts across training days
+      const dailyLiftsMap: { [dayIndex: number]: string[] } = {};
+      for (let i = 0; i < joursEntrainement; i++) {
+          dailyLiftsMap[i] = [];
+      }
+
+      // Assign one main lift per day, cycling through available days
+      mainLiftsForCycle.forEach((lift, index) => {
+          const dayToAssign = index % joursEntrainement; // Cycle through available training days
+          dailyLiftsMap[dayToAssign].push(lift);
+      });
+
 
       // Generate 4 weeks of 5/3/1
       for (const cycleWeek of cycleWeeks) {
@@ -253,25 +269,6 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
               days: [],
           };
 
-          // Determine main lifts for each day based on joursEntrainement
-          const dailyLifts: string[][] = [];
-          if (joursEntrainement === 1) {
-              dailyLifts.push(mainLifts); // All 4 lifts on day 1
-          } else if (joursEntrainement === 2) {
-              dailyLifts.push(["Squat barre", "Développé militaire barre"]); // Day 1: Squat, OHP
-              dailyLifts.push(["Développé couché", "Soulevé de terre"]); // Day 2: Bench, Deadlift
-          } else if (joursEntrainement === 3) {
-              dailyLifts.push(["Squat barre"]); // Day 1: Squat
-              dailyLifts.push(["Développé couché"]); // Day 2: Bench
-              dailyLifts.push(["Soulevé de terre", "Développé militaire barre"]); // Day 3: Deadlift, OHP
-          } else { // joursEntrainement >= 4
-              dailyLifts.push(["Squat barre"]); // Day 1: Squat
-              dailyLifts.push(["Développé couché"]); // Day 2: Bench
-              dailyLifts.push(["Soulevé de terre"]); // Day 3: Deadlift
-              dailyLifts.push(["Développé militaire barre"]); // Day 4: OHP
-              // Days 5, 6, 7 will be rest or additional accessory/cardio days (handled below)
-          }
-
           // Generate days
           for (let dayIndex = 0; dayIndex < joursEntrainement; dayIndex++) {
               const day: Program['weeks'][number]['days'][number] = {
@@ -279,13 +276,13 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                   exercises: [],
               };
 
-              const liftsForToday = dailyLifts[dayIndex] || []; // Get main lifts for this day
+              const liftsForToday = dailyLiftsMap[dayIndex] || []; // Get main lifts for this day
               const potentialDayExercises: Exercise[] = []; // Temporary list to build exercises for the day
 
               // Add main lifts for the day
               liftsForToday.forEach(liftName => {
                   const tm = trainingMaxes[liftName as keyof typeof trainingMaxes];
-                  if (tm !== undefined) {
+                  if (tm !== undefined && tm > 0) { // Only add if TM is valid
                       const setsDetails = cycleWeek.percentages.map((percent, setIdx) => {
                           const calculatedWeight = roundToNearest2_5(tm * percent);
                           const reps = cycleWeek.reps[setIdx]; // Get specific reps for this set
@@ -328,22 +325,30 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
               const addedAccessoryNames = new Set<string>(); // To prevent duplicate accessories on the same day
 
               // Helper to add accessory exercise if possible
+              let exercisesAddedCount = potentialDayExercises.length; // Start count with main lifts
               const addAccessoryIfPossible = (exercise: Exercise) => {
-                  if (potentialDayExercises.length < maxExercisesPerDay && addedAccessoryNames.size < numAccessoriesToAdd) {
-                      potentialDayExercises.push({
-                          name: exercise.name,
-                          category: exercise.category,
-                          muscleGroup: exercise.muscleGroup,
-                          muscles: exercise.muscles,
-                          equipment: exercise.equipment,
-                          sets: "3", // Standard 3 sets for accessories
-                          reps: "8-12", // Standard rep range for accessories
-                          notes: `RPE ${cycleWeek.week === 4 ? 8 : 9}`, // Adjust RPE for deload week
-                      });
-                      addedAccessoryNames.add(exercise.name);
-                      return true;
+                  if (exercisesAddedCount >= maxExercisesPerDay || addedAccessoryNames.has(exercise.name)) {
+                      return false;
                   }
-                  return false;
+                  // Check if exercise is available with current equipment (already filtered availableExercises)
+                  const isAvailable = exercise.equipment.length === 0 || (materiel && materiel.some(eq => exercise.equipment.includes(eq)));
+                  if (!isAvailable) {
+                      return false;
+                  }
+
+                  potentialDayExercises.push({
+                      name: exercise.name,
+                      category: exercise.category,
+                      muscleGroup: exercise.muscleGroup,
+                      muscles: exercise.muscles,
+                      equipment: exercise.equipment,
+                      sets: "3", // Standard 3 sets for accessories
+                      reps: "8-12", // Standard rep range for accessories
+                      notes: `RPE ${cycleWeek.week === 4 ? 8 : 9}`, // Adjust RPE for deload week
+                  });
+                  addedAccessoryNames.add(exercise.name);
+                  exercisesAddedCount++;
+                  return true;
               };
 
               // Prioritize user-selected priority exercises first
@@ -504,6 +509,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       const addedExerciseNames = new Set<string>(); // To track added exercises
 
       // Helper to add exercise if possible (simplified for non-5/3/1)
+      let exercisesAddedCount = 0; // Reset for each day
       const addSimpleExerciseIfPossible = (exercise: Exercise) => {
            if (exercisesAddedCount >= maxExercisesPerDay || addedExerciseNames.has(exercise.name)) {
                return false;
@@ -546,8 +552,6 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
 
       // --- Add exercises based on category priority, priority muscles, and limits ---
-      let exercisesAddedCount = 0; // Reset for each day
-
       // Add powerlifting exercises first (up to 1-2 per day if available and targeted)
       shuffleArray(powerliftingExercises).slice(0, Math.min(powerliftingExercises.length, 2)).forEach(addSimpleExerciseIfPossible);
 
@@ -592,7 +596,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
 
       // Ensure total exercises don't exceed maxExercisesPerDay (redundant with addSimpleExerciseIfPossible checks, but safe)
-      const finalDayExercises = dayExercises.slice(0, maxExercisesPerDay);
+      const finalDayExercises = dayExercises.slice(0, maxExercisesAddedCount); // Use exercisesAddedCount here
 
 
       // Format exercises for the program structure and calculate RPE

@@ -20,7 +20,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription as CardDescriptionShadcn } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } => "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { showSuccess, showError } from '@/utils/toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,36 +66,44 @@ const formSchema = z.object({
   priorityMuscles: z.array(z.string()).optional(),
   // New field for priority exercises
   priorityExercises: z.array(z.string()).optional(),
+  // New field for selected main lifts
+  selectedMainLifts: z.array(z.string()).optional(),
 }).superRefine((data, ctx) => {
     // Custom validation: If objective is Powerlifting or Powerbuilding, 1RM fields are required and > 0
     if (data.objectif === "Powerlifting" || data.objectif === "Powerbuilding") {
-        if (!data.squat1RM || data.squat1RM <= 0) {
+        const mainLiftsToCheck = [
+            { field: "squat1RM", name: "Squat barre", label: "Squat" },
+            { field: "bench1RM", name: "Développé couché", label: "Développé Couché" },
+            { field: "deadlift1RM", name: "Soulevé de terre", label: "Soulevé de Terre" },
+            { field: "ohp1RM", name: "Développé militaire barre", label: "Overhead Press" },
+        ];
+
+        // If specific lifts are selected, their corresponding 1RMs are required.
+        if (data.selectedMainLifts && data.selectedMainLifts.length > 0) {
+            mainLiftsToCheck.forEach(liftInfo => {
+                if (data.selectedMainLifts?.includes(liftInfo.name)) {
+                    const rmField = liftInfo.field as keyof typeof data;
+                    if (!data[rmField] || (data[rmField] as number) <= 0) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: `Veuillez entrer votre 1RM au ${liftInfo.label} (doit être > 0).`,
+                            path: [rmField],
+                        });
+                    }
+                }
+            });
+        } else {
+            // If no lifts are selected, but it's a powerlifting/powerbuilding program,
+            // we might want to warn or require at least one lift.
+            // For now, we'll allow 0 lifts, meaning only accessories will be generated.
+            // If you want to enforce at least one lift, uncomment the following:
+            /*
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: "Veuillez entrer votre 1RM au Squat (doit être > 0).",
-                path: ['squat1RM'],
+                message: "Veuillez sélectionner au moins un exercice principal pour votre programme de force.",
+                path: ['selectedMainLifts'],
             });
-        }
-        if (!data.bench1RM || data.bench1RM <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Veuillez entrer votre 1RM au Développé Couché (doit être > 0).",
-                path: ['bench1RM'],
-            });
-        }
-        if (!data.deadlift1RM || data.deadlift1RM <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Veuillez entrer votre 1RM au Soulevé de Terre (doit être > 0).",
-                path: ['deadlift1RM'],
-            });
-        }
-        if (!data.ohp1RM || data.ohp1RM <= 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Veuillez entrer votre 1RM à l'Overhead Press (doit être > 0).",
-                path: ['ohp1RM'],
-            });
+            */
         }
     }
 });
@@ -128,6 +136,7 @@ const ProgrammeGenerator: React.FC = () => {
       ohp1RM: null,
       priorityMuscles: [], // Initialize new field
       priorityExercises: [], // Initialize new field
+      selectedMainLifts: [], // Initialize new field
     },
   });
 
@@ -186,9 +195,16 @@ const ProgrammeGenerator: React.FC = () => {
     if (minutes < 60) return `${minutes} min`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    // If remaining minutes is 0, display only hours, otherwise display hours and minutes
     return remainingMinutes === 0 ? `${hours}h` : `${hours}h${remainingMinutes.toString().padStart(2, '0')} min`;
   };
+
+  // Options for main lifts selection
+  const mainLiftsOptions = [
+    { id: "Squat barre", label: "Squat barre" },
+    { id: "Développé couché", label: "Développé couché" },
+    { id: "Soulevé de terre", label: "Soulevé de terre" },
+    { id: "Développé militaire barre", label: "Développé militaire barre" },
+  ];
 
 
   // Function to handle the actual program generation and Supabase insertion
@@ -475,6 +491,58 @@ const ProgrammeGenerator: React.FC = () => {
                     </FormItem>
                   )}
                 />
+
+                {/* Main Lifts Selection (Conditionally rendered) */}
+                {show1RMInputs && (
+                    <FormField
+                        control={form.control}
+                        name="selectedMainLifts"
+                        render={() => (
+                            <FormItem>
+                                <div className="mb-4">
+                                    <FormLabel className="text-lg font-semibold text-gray-800">Exercices principaux à inclure</FormLabel>
+                                    <FormDescription className="text-gray-600">
+                                        Sélectionnez les lifts 5/3/1 que vous souhaitez faire.
+                                    </FormDescription>
+                                </div>
+                                {mainLiftsOptions.map((item) => (
+                                    <FormField
+                                        key={item.id}
+                                        control={form.control}
+                                        name="selectedMainLifts"
+                                        render={({ field }) => {
+                                            return (
+                                                <FormItem
+                                                    key={item.id}
+                                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                                >
+                                                    <FormControl>
+                                                        <Checkbox
+                                                            checked={field.value?.includes(item.id)}
+                                                            onCheckedChange={(checked) => {
+                                                                return checked
+                                                                    ? field.onChange([...(field.value || []), item.id])
+                                                                    : field.onChange(
+                                                                        field.value?.filter(
+                                                                            (value) => value !== item.id
+                                                                        )
+                                                                    );
+                                                            }}
+                                                        />
+                                                    </FormControl>
+                                                    <FormLabel className="font-normal text-gray-700">
+                                                        {item.label}
+                                                    </FormLabel>
+                                                </FormItem>
+                                            );
+                                        }}
+                                    />
+                                ))}
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
 
                 {/* 1RM Inputs (Conditionally rendered) */}
                 {show1RMInputs && (
