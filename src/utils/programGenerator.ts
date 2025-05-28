@@ -240,8 +240,8 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
   // --- 5/3/1 Logic (for Powerlifting and Powerbuilding) ---
   if (objectif === "Powerlifting" || objectif === "Powerbuilding") {
-      program.title = `Programme 5/3/1 - ${objectif}`;
-      program.description = `Programme basé sur la méthode 5/3/1 de Jim Wendler pour ${joursEntrainement} jours/semaine.`;
+      program.title = `Programme ${objectif} - ${joursEntrainement} jours/semaine`; // Updated title
+      program.description = `Programme personnalisé pour votre objectif de ${objectif} sur ${joursEntrainement} jours/semaine.`; // Updated description
       program.is531 = true;
 
 
