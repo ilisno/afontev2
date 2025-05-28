@@ -7,8 +7,8 @@ const Footer: React.FC = () => {
       <div className="container mx-auto text-center">
         <p>&copy; {new Date().getFullYear()} SmoothieBananeFraise. Tous droits réservés.</p>
         <div className="mt-2">
-          {/* Placeholder for legal links and social media */}
           <Link to="/mentions-legales" className="text-gray-400 hover:text-white mx-2">Mentions Légales</Link>
+          <Link to="/cgv" className="text-gray-400 hover:text-white mx-2">CGV</Link> {/* Added CGV link */}
           {/* Add social media links here */}
         </div>
       </div>
