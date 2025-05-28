@@ -62,6 +62,11 @@ const formSchema = z.object({
   bench1RM: z.coerce.number().optional().nullable(),
   deadlift1RM: z.coerce.number().optional().nullable(),
   ohp1RM: z.coerce.number().optional().nullable(),
+  // New fields for RM type (e.g., 1 for 1RM, 5 for 5RM)
+  squatRmType: z.coerce.number().optional().nullable(),
+  benchRmType: z.coerce.number().optional().nullable(),
+  deadliftRmType: z.coerce.number().optional().nullable(),
+  ohpRmType: z.coerce.number().optional().nullable(),
   // New field for priority muscle groups
   priorityMuscles: z.array(z.string()).optional(),
   // New field for priority exercises
@@ -72,10 +77,10 @@ const formSchema = z.object({
     // Custom validation: If objective is Powerlifting or Powerbuilding, 1RM fields are required and > 0
     if (data.objectif === "Powerlifting" || data.objectif === "Powerbuilding") {
         const mainLiftsToCheck = [
-            { field: "squat1RM", name: "Squat barre", label: "Squat" },
-            { field: "bench1RM", name: "Développé couché", label: "Développé Couché" },
-            { field: "deadlift1RM", name: "Soulevé de terre", label: "Soulevé de Terre" },
-            { field: "ohp1RM", name: "Développé militaire barre", label: "Overhead Press" },
+            { field: "squat1RM", rmTypeField: "squatRmType", name: "Squat barre", label: "Squat" },
+            { field: "bench1RM", rmTypeField: "benchRmType", name: "Développé couché", label: "Développé Couché" },
+            { field: "deadlift1RM", rmTypeField: "deadliftRmType", name: "Soulevé de terre", label: "Soulevé de Terre" },
+            { field: "ohp1RM", rmTypeField: "ohpRmType", name: "Développé militaire barre", label: "Overhead Press" },
         ];
 
         // If specific lifts are selected, their corresponding 1RMs are required.
@@ -83,27 +88,24 @@ const formSchema = z.object({
             mainLiftsToCheck.forEach(liftInfo => {
                 if (data.selectedMainLifts?.includes(liftInfo.name)) {
                     const rmField = liftInfo.field as keyof typeof data;
+                    const rmTypeField = liftInfo.rmTypeField as keyof typeof data;
+
                     if (!data[rmField] || (data[rmField] as number) <= 0) {
                         ctx.addIssue({
                             code: z.ZodIssueCode.custom,
-                            message: `Veuillez entrer votre 1RM au ${liftInfo.label} (doit être > 0).`,
+                            message: `Veuillez entrer le poids pour votre ${liftInfo.label} (doit être > 0).`,
                             path: [rmField],
+                        });
+                    }
+                    if (!data[rmTypeField] || (data[rmTypeField] as number) <= 0) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: `Veuillez sélectionner le type de RM pour votre ${liftInfo.label}.`,
+                            path: [rmTypeField],
                         });
                     }
                 }
             });
-        } else {
-            // If no lifts are selected, but it's a powerlifting/powerbuilding program,
-            // we might want to warn or require at least one lift.
-            // For now, we'll allow 0 lifts, meaning only accessories will be generated.
-            // If you want to enforce at least one lift, uncomment the following:
-            /*
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Veuillez sélectionner au moins un exercice principal pour votre programme de force.",
-                path: ['selectedMainLifts'],
-            });
-            */
         }
     }
 });
@@ -134,6 +136,10 @@ const ProgrammeGenerator: React.FC = () => {
       bench1RM: null,
       deadlift1RM: null,
       ohp1RM: null,
+      squatRmType: 1, // Default to 1RM
+      benchRmType: 1,
+      deadliftRmType: 1,
+      ohpRmType: 1,
       priorityMuscles: [], // Initialize new field
       priorityExercises: [], // Initialize new field
       selectedMainLifts: [], // Initialize new field
@@ -206,6 +212,9 @@ const ProgrammeGenerator: React.FC = () => {
     { id: "Soulevé de terre", label: "Soulevé de terre" },
     { id: "Développé militaire barre", label: "Développé militaire barre" },
   ];
+
+  // Options for RM type (1RM to 10RM)
+  const rmTypeOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
 
   // Function to handle the actual program generation and Supabase insertion
@@ -548,67 +557,171 @@ const ProgrammeGenerator: React.FC = () => {
                 {/* 1RM Inputs (Conditionally rendered) */}
                 {show1RMInputsSection && (selectedMainLifts.length > 0) && (
                     <div className="space-y-4 border-t pt-6 mt-6"> {/* Added border and padding */}
-                        <h3 className="text-xl font-bold text-gray-800">Vos 1RM (Max sur 1 répétition)</h3>
-                        <p className="text-gray-600 text-sm">Entrez vos meilleures performances récentes pour les mouvements sélectionnés.</p>
+                        <h3 className="text-xl font-bold text-gray-800">Vos performances maximales</h3>
+                        <p className="text-gray-600 text-sm">Entrez le poids et le nombre de répétitions maximales que vous pouvez faire pour les mouvements sélectionnés.</p>
                         {selectedMainLifts.includes("Squat barre") && (
-                            <FormField
-                                control={form.control}
-                                name="squat1RM"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Squat (kg)</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="Ex: 100" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className="flex items-end space-x-2">
+                                <FormField
+                                    control={form.control}
+                                    name="squat1RM"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormLabel>Squat (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Ex: 100" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="squatRmType"
+                                    render={({ field }) => (
+                                        <FormItem className="w-24">
+                                            <FormLabel>RM</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="RM" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {rmTypeOptions.map((rm) => (
+                                                        <SelectItem key={rm} value={rm.toString()}>
+                                                            {rm}RM
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         )}
                         {selectedMainLifts.includes("Développé couché") && (
-                            <FormField
-                                control={form.control}
-                                name="bench1RM"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Développé Couché (kg)</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="Ex: 80" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className="flex items-end space-x-2">
+                                <FormField
+                                    control={form.control}
+                                    name="bench1RM"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormLabel>Développé Couché (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Ex: 80" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="benchRmType"
+                                    render={({ field }) => (
+                                        <FormItem className="w-24">
+                                            <FormLabel>RM</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="RM" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {rmTypeOptions.map((rm) => (
+                                                        <SelectItem key={rm} value={rm.toString()}>
+                                                            {rm}RM
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         )}
                         {selectedMainLifts.includes("Soulevé de terre") && (
-                            <FormField
-                                control={form.control}
-                                name="deadlift1RM"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Soulevé de Terre (kg)</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="Ex: 150" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className="flex items-end space-x-2">
+                                <FormField
+                                    control={form.control}
+                                    name="deadlift1RM"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormLabel>Soulevé de Terre (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Ex: 150" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="deadliftRmType"
+                                    render={({ field }) => (
+                                        <FormItem className="w-24">
+                                            <FormLabel>RM</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="RM" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {rmTypeOptions.map((rm) => (
+                                                        <SelectItem key={rm} value={rm.toString()}>
+                                                            {rm}RM
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         )}
                         {selectedMainLifts.includes("Développé militaire barre") && (
-                            <FormField
-                                control={form.control}
-                                name="ohp1RM"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Overhead Press (kg)</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="Ex: 50" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className="flex items-end space-x-2">
+                                <FormField
+                                    control={form.control}
+                                    name="ohp1RM"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormLabel>Overhead Press (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Ex: 50" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="ohpRmType"
+                                    render={({ field }) => (
+                                        <FormItem className="w-24">
+                                            <FormLabel>RM</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="RM" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {rmTypeOptions.map((rm) => (
+                                                        <SelectItem key={rm} value={rm.toString()}>
+                                                            {rm}RM
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         )}
                     </div>
                 )}

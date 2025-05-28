@@ -13,6 +13,11 @@ const programFormSchemaForGenerator = z.object({
   bench1RM: z.coerce.number().optional().nullable(),
   deadlift1RM: z.coerce.number().optional().nullable(),
   ohp1RM: z.coerce.number().optional().nullable(),
+  // New fields for RM type (e.g., 1 for 1RM, 5 for 5RM)
+  squatRmType: z.coerce.number().optional().nullable(),
+  benchRmType: z.coerce.number().optional().nullable(),
+  deadliftRmType: z.coerce.number().optional().nullable(),
+  ohpRmType: z.coerce.number().optional().nullable(),
   // New field for priority muscle groups
   priorityMuscles: z.array(z.string()).optional(),
   // New field for priority exercises
@@ -23,22 +28,31 @@ const programFormSchemaForGenerator = z.object({
     // Custom validation: If objective is Powerlifting or Powerbuilding, 1RM fields are required and > 0
     if (data.objectif === "Powerlifting" || data.objectif === "Powerbuilding") {
         const mainLiftsToCheck = [
-            { field: "squat1RM", name: "Squat barre", label: "Squat" },
-            { field: "bench1RM", name: "Développé couché", label: "Développé Couché" },
-            { field: "deadlift1RM", name: "Soulevé de terre", label: "Soulevé de Terre" },
-            { field: "ohp1RM", name: "Développé militaire barre", label: "Overhead Press" },
+            { field: "squat1RM", rmTypeField: "squatRmType", name: "Squat barre", label: "Squat" },
+            { field: "bench1RM", rmTypeField: "benchRmType", name: "Développé couché", label: "Développé Couché" },
+            { field: "deadlift1RM", rmTypeField: "deadliftRmType", name: "Soulevé de terre", label: "Soulevé de Terre" },
+            { field: "ohp1RM", rmTypeField: "ohpRmType", name: "Développé militaire barre", label: "Overhead Press" },
         ];
 
         // If specific lifts are selected, their corresponding 1RMs are required.
         if (data.selectedMainLifts && data.selectedMainLifts.length > 0) {
             mainLiftsToCheck.forEach(liftInfo => {
+                const rmField = liftInfo.field as keyof typeof data;
+                const rmTypeField = liftInfo.rmTypeField as keyof typeof data;
+
                 if (data.selectedMainLifts?.includes(liftInfo.name)) {
-                    const rmField = liftInfo.field as keyof typeof data;
                     if (!data[rmField] || (data[rmField] as number) <= 0) {
                         ctx.addIssue({
                             code: z.ZodIssueCode.custom,
-                            message: `Veuillez entrer votre 1RM au ${liftInfo.label} (doit être > 0).`,
+                            message: `Veuillez entrer le poids pour votre ${liftInfo.label} (doit être > 0).`,
                             path: [rmField],
+                        });
+                    }
+                    if (!data[rmTypeField] || (data[rmTypeField] as number) <= 0) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: `Veuillez sélectionner le type de RM pour votre ${liftInfo.label}.`,
+                            path: [rmTypeField],
                         });
                     }
                 }
@@ -96,6 +110,13 @@ export type Program = {
 // Helper function to round weight to the nearest 2.5 kg
 const roundToNearest2_5 = (weight: number): number => {
     return Math.round(weight / 2.5) * 2.5;
+};
+
+// Helper function to estimate 1RM using the Epley formula
+const estimate1RM = (weight: number, reps: number): number => {
+    if (reps === 0) return 0;
+    if (reps === 1) return weight;
+    return weight * (1 + reps / 30);
 };
 
 // --- Updated Exercise List with corrected capitalization, categories, and muscles ---
@@ -180,7 +201,7 @@ const shuffleArray = <T>(array: T[]): T[] => {
 
 // --- Client-Side Program Generation Logic ---
 export const generateProgramClientSide = (values: ProgramFormData): Program => {
-  const { objectif, experience, split, joursEntrainement, materiel, dureeMax, squat1RM, bench1RM, deadlift1RM, ohp1RM, priorityMuscles, priorityExercises, selectedMainLifts } = values; // Destructure new field
+  const { objectif, experience, split, joursEntrainement, materiel, dureeMax, squat1RM, bench1RM, deadlift1RM, ohp1RM, squatRmType, benchRmType, deadliftRmType, ohpRmType, priorityMuscles, priorityExercises, selectedMainLifts } = values; // Destructure new field
 
   // Filter all exercises by available equipment once
   const availableExercises = filterByEquipment(allExercises, materiel);
@@ -200,38 +221,17 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
   // --- 5/3/1 Logic (for Powerlifting and Powerbuilding) ---
   if (objectif === "Powerlifting" || objectif === "Powerbuilding") {
-      // Ensure 1RMs are available (should be handled by Zod validation in component, but defensive check)
-      if (selectedMainLifts && selectedMainLifts.length > 0) { // Only check if lifts are selected
-          if (selectedMainLifts.includes("Squat barre") && (squat1RM === null || squat1RM <= 0)) {
-              console.error("Missing or invalid Squat 1RM for 5/3/1 program generation.");
-              // Fallback or throw error
-          }
-          if (selectedMainLifts.includes("Développé couché") && (bench1RM === null || bench1RM <= 0)) {
-              console.error("Missing or invalid Bench 1RM for 5/3/1 program generation.");
-              // Fallback or throw error
-          }
-          if (selectedMainLifts.includes("Soulevé de terre") && (deadlift1RM === null || deadlift1RM <= 0)) {
-              console.error("Missing or invalid Deadlift 1RM for 5/3/1 program generation.");
-              // Fallback or throw error
-          }
-          if (selectedMainLifts.includes("Développé militaire barre") && (ohp1RM === null || ohp1RM <= 0)) {
-              console.error("Missing or invalid OHP 1RM for 5/3/1 program generation.");
-              // Fallback or throw error
-          }
-      }
-
-
       program.title = `Programme 5/3/1 - ${objectif}`;
       program.description = `Programme basé sur la méthode 5/3/1 de Jim Wendler pour ${joursEntrainement} jours/semaine.`;
       program.is531 = true;
 
 
-      // Calculate Training Max (TM) for each lift
+      // Calculate Training Max (TM) for each lift using estimated 1RM
       const trainingMaxes = {
-          "Squat barre": squat1RM ? roundToNearest2_5(squat1RM * 0.9) : 0,
-          "Développé couché": bench1RM ? roundToNearest2_5(bench1RM * 0.9) : 0,
-          "Soulevé de terre": deadlift1RM ? roundToNearest2_5(deadlift1RM * 0.9) : 0,
-          "Développé militaire barre": ohp1RM ? roundToNearest2_5(ohp1RM * 0.9) : 0,
+          "Squat barre": (squat1RM && squatRmType) ? roundToNearest2_5(estimate1RM(squat1RM, squatRmType) * 0.9) : 0,
+          "Développé couché": (bench1RM && benchRmType) ? roundToNearest2_5(estimate1RM(bench1RM, benchRmType) * 0.9) : 0,
+          "Soulevé de terre": (deadlift1RM && deadliftRmType) ? roundToNearest2_5(estimate1RM(deadlift1RM, deadliftRmType) * 0.9) : 0,
+          "Développé militaire barre": (ohp1RM && ohpRmType) ? roundToNearest2_5(estimate1RM(ohp1RM, ohpRmType) * 0.9) : 0,
       };
 
       // 5/3/1 percentages and reps per week
