@@ -14,6 +14,7 @@ import Login from "./pages/Login";
 import Tarifs from "./pages/Tarifs";
 import Merci1 from "./pages/Merci1"; // Import Merci1
 import Merci2 from "./pages/Merci2"; // Import Merci2
+import MentionsLegales from "./pages/MentionsLegales"; // Import MentionsLegales
 import { PopupProvider } from "./contexts/PopupContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SessionContextProvider } from '@supabase/auth-helpers-react'; // Removed useSession
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/tarifs" element={<Tarifs />} />
               <Route path="/merci1" element={<Merci1 />} /> {/* Add Merci1 route */}
               <Route path="/merci2" element={<Merci2 />} /> {/* Add Merci2 route */}
+              <Route path="/mentions-legales" element={<MentionsLegales />} /> {/* Add MentionsLegales route */}
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
