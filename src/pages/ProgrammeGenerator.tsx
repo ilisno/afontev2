@@ -186,7 +186,8 @@ const ProgrammeGenerator: React.FC = () => {
     if (minutes < 60) return `${minutes} min`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return `${hours}h${remainingMinutes > 0 ? remainingMinutes.toString().padStart(2, '0') : '00'} min`;
+    // If remaining minutes is 0, display only hours, otherwise display hours and minutes
+    return remainingMinutes === 0 ? `${hours}h` : `${hours}h${remainingMinutes.toString().padStart(2, '0')} min`;
   };
 
 
