@@ -127,11 +127,6 @@ const Footer: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Payment Icons (Placeholder) */}
-      <div className="mt-8 text-center">
-        <img src="/payment-methods.png" alt="Payment Methods" className="mx-auto h-8 opacity-75" /> {/* Placeholder image */}
-      </div>
     </footer>
   );
 };
