@@ -208,7 +208,8 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
   // Define common constants
   const maxExercisesPerDay = 8; // Overall limit for exercises per day
-  const largeMuscleGroups: MuscleGroup[] = ["Jambes", "Pectoraux", "Dos", "Épaules"]; // Used for volume tracking and general accessory selection
+  // Groups subject to the 2-exercise per day limit
+  const limitedDailyExerciseGroups: MuscleGroup[] = ["Jambes", "Pectoraux", "Dos"];
 
   // Initialize the program structure
   const program: Program = {
@@ -278,6 +279,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
               const liftsForToday = dailyLiftsMap[dayIndex] || []; // Get main lifts for this day
               const potentialDayExercises: Exercise[] = []; // Temporary list to build exercises for the day
+              const muscleGroupDailyCount: { [key: string]: number } = {}; // Track exercises per muscle group for the day
 
               // Add main lifts for the day
               liftsForToday.forEach(liftName => {
@@ -313,6 +315,11 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                            notes: `TM: ${tm} kg`,
                            setsDetails: setsDetails,
                        });
+
+                       // Increment daily count for limited groups
+                       if (limitedDailyExerciseGroups.includes(exerciseObj?.muscleGroup as MuscleGroup)) {
+                           muscleGroupDailyCount[exerciseObj!.muscleGroup] = (muscleGroupDailyCount[exerciseObj!.muscleGroup] || 0) + 1;
+                       }
                   }
               });
 
@@ -334,6 +341,16 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                   const isAvailable = exercise.equipment.length === 0 || (materiel && materiel.some(eq => exercise.equipment.includes(eq)));
                   if (!isAvailable) {
                       return false;
+                  }
+
+                  // Check daily limit for large muscle groups
+                  if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
+                      const currentCount = muscleGroupDailyCount[exercise.muscleGroup] || 0;
+                      if (currentCount >= 2) {
+                          return false; // Cannot add more than 2 exercises for this large muscle group today
+                      }
+                      // If added, increment count
+                      muscleGroupDailyCount[exercise.muscleGroup] = currentCount + 1;
                   }
 
                   potentialDayExercises.push({
@@ -543,7 +560,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
     // Initialize weekly volume tracker for this week
     const weeklyVolume: { [key in MuscleGroup]?: number } = {}; // Use MuscleGroup type for keys
-    largeMuscleGroups.forEach(group => weeklyVolume[group] = 0);
+    limitedDailyExerciseGroups.forEach(group => weeklyVolume[group] = 0);
 
 
     // Generate days based on joursEntrainement
@@ -552,6 +569,9 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
         dayNumber: dayIndex + 1,
         exercises: [],
       };
+
+      // Track exercises per muscle group for the current day
+      const muscleGroupDailyCount: { [key: string]: number } = {};
 
       // Determine which muscle groups to target based on the split and day index
       const targetMuscleGroups = selectedSplitMuscles[dayIndex % numSplitDays];
@@ -572,10 +592,21 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                return false;
            }
 
-           // Check volume cap only for large muscle groups
-           if (largeMuscleGroups.includes(exercise.muscleGroup)) {
+           // Check daily limit for large muscle groups
+           if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
+               const currentCount = muscleGroupDailyCount[exercise.muscleGroup] || 0;
+               if (currentCount >= 2) {
+                   return false; // Cannot add more than 2 exercises for this large muscle group today
+               }
+               // If added, increment count
+               muscleGroupDailyCount[exercise.muscleGroup] = currentCount + 1;
+           }
+
+           // Check volume cap only for large muscle groups (this is a soft cap, daily limit is stricter)
+           if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
                 if ((weeklyVolume[exercise.muscleGroup] || 0) + baseSets > weeklyVolumeCap) {
-                    return false; // Cannot add due to cap
+                    // This check is less critical now with the daily limit, but kept as a safeguard
+                    // return false; // Cannot add due to cap
                 }
                 weeklyVolume[exercise.muscleGroup] = (weeklyVolume[exercise.muscleGroup] || 0) + baseSets; // Add sets to weekly volume
            }
