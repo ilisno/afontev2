@@ -29,6 +29,13 @@ import { generateProgramClientSide, Program, ProgramFormData } from '@/utils/pro
 import { useSession } from '@supabase/auth-helpers-react'; // Import useSession
 import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile
 import { cn } from '@/lib/utils'; // Import cn
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // Import Select components
 
 // Define the schema for form validation
 const formSchema = z.object({
@@ -44,16 +51,12 @@ const formSchema = z.object({
   joursEntrainement: z.coerce.number({
     required_error: "Veuillez indiquer le nombre de jours d'entraînement.",
     invalid_type_error: "Veuillez entrer un nombre valide.",
-  }).min(1, { message: "Doit être au moins 1." }).max(7, { message: "Doit être au maximum 7." }),
+  }).min(1, { message: "Doit être au moins 1." }).max(6, { message: "Doit être au maximum 6." }), // Updated max to 6
   dureeMax: z.coerce.number({
     required_error: "Veuillez indiquer la durée maximale par séance.",
     invalid_type_error: "Veuillez entrer un nombre valide.",
-  }).min(15, { message: "Doit être au moins 15 minutes." }).max(180, { message: "Doit être au maximum 180 minutes." }),
+  }).min(30, { message: "Doit être au moins 30 minutes." }).max(105, { message: "Doit être au maximum 105 minutes (1h45)." }), // Updated min to 30 and max to 105
   materiel: z.array(z.string()).optional(),
-  email: z.string().email({
-    message: "Veuillez entrer une adresse email valide.",
-  }).or(z.literal("")), // Allow empty string or a valid email
-
   // New fields for 1RM (optional by default)
   squat1RM: z.coerce.number().optional().nullable(),
   bench1RM: z.coerce.number().optional().nullable(),
@@ -173,6 +176,18 @@ const ProgrammeGenerator: React.FC = () => {
       { id: "Tractions", label: "Tractions" },
       { id: "Dips", label: "Dips" },
   ];
+
+  // Options for Jours d'entraînement
+  const joursEntrainementOptions = Array.from({ length: 6 }, (_, i) => i + 1); // 1 to 6 days
+
+  // Options for Durée max par séance
+  const dureeMaxOptions = [30, 45, 60, 75, 90, 105]; // 30 min to 1h45 min (105 min)
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h${remainingMinutes > 0 ? remainingMinutes.toString().padStart(2, '0') : '00'} min`;
+  };
 
 
   // Function to handle the actual program generation and Supabase insertion
@@ -618,31 +633,53 @@ const ProgrammeGenerator: React.FC = () => {
                   )}
                 />
 
-                {/* Jours d'entraînement / semaine */}
+                {/* Jours d'entraînement / semaine (Select) */}
                 <FormField
                   control={form.control}
                   name="joursEntrainement"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-semibold text-gray-800">Jours d'entraînement / semaine</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="3" {...field} />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez le nombre de jours" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {joursEntrainementOptions.map((day) => (
+                            <SelectItem key={day} value={day.toString()}>
+                              {day} jour{day > 1 ? 's' : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* Durée max par séance (minutes) */}
+                {/* Durée max par séance (minutes) (Select) */}
                 <FormField
                   control={form.control}
                   name="dureeMax"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-semibold text-gray-800">Durée max par séance (minutes)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="60" {...field} />
-                      </FormControl>
+                      <FormLabel className="text-lg font-semibold text-gray-800">Durée max par séance</FormLabel>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez la durée maximale" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {dureeMaxOptions.map((duration) => (
+                            <SelectItem key={duration} value={duration.toString()}>
+                              {formatDuration(duration)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
