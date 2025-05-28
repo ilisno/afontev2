@@ -36,7 +36,7 @@ const Index: React.FC = () => {
           asChild
           className="bg-sbf-red text-white hover:bg-sbf-yellow hover:text-sbf-red text-lg px-8 py-6 rounded-md font-semibold shadow-lg transition-colors duration-300 border-2 border-sbf-yellow"
         >
-           <Link to="/programme">Créer mon programme</Link>
+           <Link to="/programme">Créer mon programme gratuitement</Link>
         </Button>
 
         {/* Mon Espace Static Preview Section */}
