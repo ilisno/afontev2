@@ -512,7 +512,7 @@ const ProgrammeGenerator: React.FC = () => {
                                 <div className="mb-4">
                                     <FormLabel className="text-lg font-semibold text-gray-800">Exercices principaux à inclure</FormLabel>
                                     <FormDescription className="text-gray-600">
-                                        Sélectionnez les lifts 5/3/1 que vous souhaitez faire.
+                                        Sélectionnez les exercices de force que vous souhaitez faire.
                                     </FormDescription>
                                 </div>
                                 {mainLiftsOptions.map((item) => (
