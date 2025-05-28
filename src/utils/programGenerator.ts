@@ -4,8 +4,8 @@ import * as z from "zod";
 const programFormSchemaForGenerator = z.object({
   objectif: z.enum(["Prise de Masse", "Sèche / Perte de Gras", "Powerlifting", "Powerbuilding"]),
   experience: z.enum(["Débutant (< 1 an)", "Intermédiaire (1-3 ans)", "Avancé (3+ ans)"]),
-  split: z.enum(["Full Body (Tout le corps)", "Half Body (Haut / Bas)", "Push Pull Legs", "Autre / Pas de préférence"]),
-  joursEntrainement: z.coerce.number().min(1).max(7),
+  // Removed 'split' from schema
+  joursEntrainement: z.coerce.number().min(1).max(6), // Max 6 days now
   dureeMax: z.coerce.number().min(15).max(180),
   materiel: z.array(z.string()).optional(),
   // New fields for 1RM (optional by default)
@@ -199,7 +199,20 @@ const shuffleArray = <T>(array: T[]): T[] => {
 
 // --- Client-Side Program Generation Logic ---
 export const generateProgramClientSide = (values: ProgramFormData): Program => {
-  const { objectif, experience, split, joursEntrainement, materiel, dureeMax, squat1RM, bench1RM, deadlift1RM, ohp1RM, squatRmType, benchRmType, deadliftRmType, ohpRmType, priorityMuscles, priorityExercises, selectedMainLifts } = values;
+  const { objectif, experience, joursEntrainement, materiel, dureeMax, squat1RM, bench1RM, deadlift1RM, ohp1RM, squatRmType, benchRmType, deadliftRmType, ohpRmType, priorityMuscles, priorityExercises, selectedMainLifts } = values;
+
+  // Determine the split type based on joursEntrainement
+  let determinedSplit: "Full Body (Tout le corps)" | "Half Body (Haut / Bas)" | "Push Pull Legs" | "Autre / Pas de préférence";
+  if (joursEntrainement >= 1 && joursEntrainement <= 3) {
+      determinedSplit = "Full Body (Tout le corps)";
+  } else if (joursEntrainement === 4 || joursEntrainement === 5) {
+      determinedSplit = "Half Body (Haut / Bas)";
+  } else if (joursEntrainement === 6) {
+      determinedSplit = "Push Pull Legs";
+  } else {
+      determinedSplit = "Autre / Pas de préférence"; // Fallback, though schema limits to 6
+  }
+
 
   // Filter all exercises by available equipment once
   const availableExercises = filterByEquipment(allExercises, materiel);
@@ -275,7 +288,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
           // Generate days
           for (let dayIndex = 0; dayIndex < joursEntrainement; dayIndex++) {
-              const day: Program['weeks'][number]['days'][number] = {
+              const day: Program['weeks'][number']['days'][number] = {
                   dayNumber: dayIndex + 1,
                   exercises: [],
               };
@@ -504,13 +517,13 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
   // Define muscle groups for each split type (using general MuscleGroup type)
   const splitMuscles: { [key: string]: MuscleGroup[][] } = {
-      "Full Body (Tout le corps)": [["Jambes", "Pectoraux", "Dos", "Épaules", "Biceps", "Triceps", "Abdos"]], // All muscles each day
-      "Half Body (Haut / Bas)": [["Pectoraux", "Dos", "Épaules", "Biceps", "Triceps"], ["Jambes", "Abdos", "Mollets"]], // Upper/Lower split, added Mollets
-      "Push Pull Legs": [["Pectoraux", "Épaules", "Triceps"], ["Dos", "Biceps", "Avant-bras"], ["Jambes", "Abdos", "Mollets"]], // PPL split, added Avant-bras, Mollets
-      "Autre / Pas de préférence": [["Jambes", "Pectoraux", "Dos", "Épaules", "Biceps", "Triceps", "Abdos", "Mollets", "Avant-bras"]], // Default to Full Body logic, include all general groups
+      "Full Body (Tout le corps)": [["Jambes", "Pectoraux", "Dos", "Épaules", "Biceps", "Triceps", "Abdos", "Mollets", "Avant-bras"]], // All muscles each day
+      "Half Body (Haut / Bas)": [["Pectoraux", "Dos", "Épaules", "Biceps", "Triceps"], ["Jambes", "Abdos", "Mollets", "Avant-bras"]], // Upper/Lower split
+      "Push Pull Legs": [["Pectoraux", "Épaules", "Triceps"], ["Dos", "Biceps", "Avant-bras"], ["Jambes", "Abdos", "Mollets"]], // PPL split
   };
 
-  const selectedSplitMuscles = splitMuscles[split] || splitMuscles["Autre / Pas de préférence"];
+  // Use the determined split
+  const selectedSplitMuscles = splitMuscles[determinedSplit] || splitMuscles["Full Body (Tout le corps)"]; // Fallback to Full Body
   const numSplitDays = selectedSplitMuscles.length;
 
   const weeklyVolumeCap = 15; // Max sets per week for large muscle groups (used as a soft cap in current logic)
@@ -544,43 +557,43 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       let dayExercises: Exercise[] = [];
       const addedExerciseNames = new Set<string>();
 
-      // Helper to check if an exercise can be added without modifying state
-      const canAddExercise = (exercise: Exercise, currentExercisesCount: number, currentAddedNames: Set<string>, currentMuscleGroupCounts: { [key: string]: number }): boolean => {
-           if (currentExercisesCount >= maxExercisesPerDay || currentAddedNames.has(exercise.name)) {
+      // Helper to add exercise if possible (simplified for non-5/3/1)
+      let exercisesAddedCount = 0; // Reset for each day
+      const addSimpleExerciseIfPossible = (exercise: Exercise) => {
+           if (exercisesAddedCount >= maxExercisesPerDay || addedExerciseNames.has(exercise.name)) {
                return false;
            }
 
+           // Check if exercise is available with current equipment (already filtered availableExercises)
            const isAvailable = exercise.equipment.length === 0 || (materiel && materiel.some(eq => exercise.equipment.includes(eq)));
            if (!isAvailable) {
                return false;
            }
 
+           // Check daily limit for large muscle groups
            if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
-               const currentCount = currentMuscleGroupCounts[exercise.muscleGroup] || 0;
+               const currentCount = muscleGroupDailyCount[exercise.muscleGroup] || 0;
                if (currentCount >= 2) {
-                   return false;
+                   return false; // Cannot add more than 2 exercises for this large muscle group today
                }
+               // If added, increment count
+               muscleGroupDailyCount[exercise.muscleGroup] = currentCount + 1;
            }
 
            // Check volume cap only for large muscle groups (this is a soft cap, daily limit is stricter)
            if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
                 if ((weeklyVolume[exercise.muscleGroup] || 0) + baseSets > weeklyVolumeCap) {
-                    return false;
+                    // This check is less critical now with the daily limit, but kept as a safeguard
+                    // return false; // Cannot add due to cap
                 }
+                weeklyVolume[exercise.muscleGroup] = (weeklyVolume[exercise.muscleGroup] || 0) + baseSets; // Add sets to weekly volume
            }
-           return true;
-       };
 
-      // Helper to actually add an exercise and update state
-      const commitAddExercise = (exercise: Exercise) => {
            dayExercises.push(exercise);
            addedExerciseNames.add(exercise.name);
            exercisesAddedCount++;
-           if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
-               muscleGroupDailyCount[exercise.muscleGroup] = (muscleGroupDailyCount[exercise.muscleGroup] || 0) + 1;
-               weeklyVolume[exercise.muscleGroup] = (weeklyVolume[exercise.muscleGroup] || 0) + baseSets;
-           }
-      };
+           return true; // Exercise added
+       };
 
 
       // Filter available exercises for today by target muscle groups
@@ -592,23 +605,13 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
 
       // --- Add exercises based on category priority, priority muscles, and limits ---
-      let exercisesAddedCount = 0; // Reset for each day
-
       // Add powerlifting exercises first (up to 1-2 per day if available and targeted)
-      shuffleArray(powerliftingExercises).slice(0, Math.min(powerliftingExercises.length, 2)).forEach(ex => {
-          if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount)) {
-              commitAddExercise(ex);
-          }
-      });
+      shuffleArray(powerliftingExercises).slice(0, Math.min(powerliftingExercises.length, 2)).forEach(addSimpleExerciseIfPossible);
 
       // Add secondary compounds (up to 2-3 per day if available and targeted)
-      shuffleArray(secondaryCompounds).slice(0, Math.min(secondaryCompounds.length, 3)).forEach(ex => {
-          if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount)) {
-              commitAddExercise(ex);
-          }
-      });
+      shuffleArray(secondaryCompounds).slice(0, Math.min(secondaryCompounds.length, 3)).forEach(addSimpleExerciseIfPossible);
 
-      // --- Strict Arm Isolation Balancing Logic ---
+      // --- Strict Arm Isolation Balancing Logic (for non-5/3/1) ---
       const availableBicepsIsolation = shuffleArray(availableExercisesForToday.filter(ex => ex.muscleGroup === "Biceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère")));
       const availableTricepsIsolation = shuffleArray(availableExercisesForToday.filter(ex => ex.muscleGroup === "Triceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère")));
 
@@ -621,16 +624,37 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           const nextTricep = availableTricepsIsolation[tricepPoolIdx];
 
           // Check if both can be added before committing either
-          const canAddBicep = canAddExercise(nextBicep, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount);
-          const canAddTricep = canAddExercise(nextTricep, exercisesAddedCount + (canAddBicep ? 1 : 0), addedExerciseNames, muscleGroupDailyCount); // Check tricep assuming bicep is added
+          const canAddBicep = addSimpleExerciseIfPossible(nextBicep);
+          // Temporarily decrement exercisesAddedCount and muscleGroupDailyCount for bicep to check tricep correctly
+          if (canAddBicep) {
+              exercisesAddedCount--;
+              if (limitedDailyExerciseGroups.includes(nextBicep.muscleGroup)) {
+                  muscleGroupDailyCount[nextBicep.muscleGroup] = (muscleGroupDailyCount[nextBicep.muscleGroup] || 0) - 1;
+              }
+          }
+
+          const canAddTricep = addSimpleExerciseIfPossible(nextTricep);
+
+          // Revert temporary changes if bicep was added but tricep couldn't be
+          if (canAddBicep && !canAddTricep) {
+              // Remove the bicep exercise that was just added
+              dayExercises.pop();
+              addedExerciseNames.delete(nextBicep.name);
+              exercisesAddedCount++; // Revert count
+              if (limitedDailyExerciseGroups.includes(nextBicep.muscleGroup)) {
+                  muscleGroupDailyCount[nextBicep.muscleGroup] = (muscleGroupDailyCount[nextBicep.muscleGroup] || 0) + 1;
+              }
+          }
 
           if (canAddBicep && canAddTricep) {
-              commitAddExercise(nextBicep);
-              commitAddExercise(nextTricep);
+              // Both were added successfully, increment indices
               bicepPoolIdx++;
               tricepPoolIdx++;
           } else {
               // If a pair cannot be formed, stop trying to add arm isolation for this day
+              // Also increment indices to move past the current exercises that couldn't be paired
+              bicepPoolIdx++;
+              tricepPoolIdx++;
               break;
           }
       }
@@ -640,8 +664,8 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           !addedExerciseNames.has(ex.name) && ex.muscleGroup !== "Biceps" && ex.muscleGroup !== "Triceps"
       ));
       for (const ex of remainingAccessories) {
-          if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount)) {
-              commitAddExercise(ex);
+          if (addSimpleExerciseIfPossible(ex)) {
+              // If added, continue to next
           }
       }
 

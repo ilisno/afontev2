@@ -45,9 +45,7 @@ const formSchema = z.object({
   experience: z.enum(["Débutant (< 1 an)", "Intermédiaire (1-3 ans)", "Avancé (3+ ans)"], {
     required_error: "Veuillez sélectionner votre niveau d'expérience.",
   }),
-  split: z.enum(["Full Body (Tout le corps)", "Half Body (Haut / Bas)", "Push Pull Legs", "Autre / Pas de préférence"], {
-    required_error: "Veuillez sélectionner un type de split.",
-  }),
+  // Removed 'split' field as it will be determined automatically
   joursEntrainement: z.coerce.number({
     required_error: "Veuillez indiquer le nombre de jours d'entraînement.",
     invalid_type_error: "Veuillez entrer un nombre valide.",
@@ -127,7 +125,7 @@ const ProgrammeGenerator: React.FC = () => {
     defaultValues: {
       objectif: undefined,
       experience: undefined,
-      split: undefined,
+      // Removed 'split' from defaultValues
       joursEntrainement: 3,
       dureeMax: 60,
       materiel: [],
@@ -771,57 +769,7 @@ const ProgrammeGenerator: React.FC = () => {
                   )}
                 />
 
-                {/* Type de split préféré */}
-                <FormField
-                  control={form.control}
-                  name="split"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel className="text-lg font-semibold text-gray-800">Type de split préféré</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Full Body (Tout le corps)" />
-                            </FormControl>
-                            <FormLabel className="font-normal text-gray-700">
-                              Full Body (Tout le corps)
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Half Body (Haut / Bas)" />
-                            </FormControl>
-                            <FormLabel className="font-normal text-gray-700">
-                              Half Body (Haut / Bas)
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Push Pull Legs" />
-                            </FormControl>
-                            <FormLabel className="font-normal text-gray-700">
-                              Push Pull Legs
-                            </FormLabel>
-                          </FormItem>
-                           <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Autre / Pas de préférence" />
-                            </FormControl>
-                            <FormLabel className="font-normal text-gray-700">
-                              Autre / Pas de préférence
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Removed: Type de split préféré */}
 
                 {/* Jours d'entraînement / semaine (Select) */}
                 <FormField
