@@ -142,7 +142,8 @@ const ProgrammeGenerator: React.FC = () => {
 
   // Watch the 'objectif' field to conditionally show 1RM inputs
   const selectedObjectif = form.watch("objectif");
-  const show1RMInputs = selectedObjectif === "Powerlifting" || selectedObjectif === "Powerbuilding";
+  const show1RMInputsSection = selectedObjectif === "Powerlifting" || selectedObjectif === "Powerbuilding";
+  const selectedMainLifts = form.watch("selectedMainLifts") || []; // Watch selected main lifts
 
 
   // Update default email value if session changes after initial render
@@ -493,7 +494,7 @@ const ProgrammeGenerator: React.FC = () => {
                 />
 
                 {/* Main Lifts Selection (Conditionally rendered) */}
-                {show1RMInputs && (
+                {show1RMInputsSection && (
                     <FormField
                         control={form.control}
                         name="selectedMainLifts"
@@ -545,63 +546,70 @@ const ProgrammeGenerator: React.FC = () => {
                 )}
 
                 {/* 1RM Inputs (Conditionally rendered) */}
-                {show1RMInputs && (
+                {show1RMInputsSection && (selectedMainLifts.length > 0) && (
                     <div className="space-y-4 border-t pt-6 mt-6"> {/* Added border and padding */}
                         <h3 className="text-xl font-bold text-gray-800">Vos 1RM (Max sur 1 répétition)</h3>
-                        <p className="text-gray-600 text-sm">Entrez vos meilleures performances récentes pour les 4 mouvements principaux.</p>
-                        <FormField
-                            control={form.control}
-                            name="squat1RM"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Squat (kg)</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" placeholder="Ex: 100" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="bench1RM"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Développé Couché (kg)</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" placeholder="Ex: 80" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="deadlift1RM"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Soulevé de Terre (kg)</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" placeholder="Ex: 150" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="ohp1RM"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Overhead Press (kg)</FormLabel>
-                                    <FormControl>
-                                        {/* Corrected onChange handler */}
-                                        <Input type="number" placeholder="Ex: 50" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <p className="text-gray-600 text-sm">Entrez vos meilleures performances récentes pour les mouvements sélectionnés.</p>
+                        {selectedMainLifts.includes("Squat barre") && (
+                            <FormField
+                                control={form.control}
+                                name="squat1RM"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Squat (kg)</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="Ex: 100" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                        {selectedMainLifts.includes("Développé couché") && (
+                            <FormField
+                                control={form.control}
+                                name="bench1RM"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Développé Couché (kg)</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="Ex: 80" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                        {selectedMainLifts.includes("Soulevé de terre") && (
+                            <FormField
+                                control={form.control}
+                                name="deadlift1RM"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Soulevé de Terre (kg)</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="Ex: 150" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                        {selectedMainLifts.includes("Développé militaire barre") && (
+                            <FormField
+                                control={form.control}
+                                name="ohp1RM"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Overhead Press (kg)</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="Ex: 50" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                     </div>
                 )}
 
