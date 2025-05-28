@@ -5,9 +5,9 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button'; // Using shadcn Button
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Using shadcn Card
 import { DollarSign, Target, Clock, LineChart, Zap, Heart, Scale, Dumbbell } from 'lucide-react'; // Importing icons
-// Removed: import MonEspacePreviewTable from '@/components/MonEspacePreviewTable'; // Import the new component
 import StrengthProgressChart from '@/components/StrengthProgressChart'; // Import the new chart component
 import { useSession } from '@supabase/auth-helpers-react'; // Import useSession hook
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; // Import Accordion components
 
 const Index: React.FC = () => {
   const session = useSession(); // Get the user session
@@ -31,17 +31,11 @@ const Index: React.FC = () => {
           Obtenez votre programme de musculation personnalisé pour 10x moins cher qu'un coaching classique.
         </p>
 
-        {/* Placeholder for Illustration */}
-        {/* <div className="mb-8">[Illustration de personnes s'entraînant]</div> */}
-
         {/* Call To Action Button */}
-        {/* Corrected Button asChild usage */}
         <Button
-          asChild // Use asChild to render as a Link
-          // Updated classes for red background, white text, yellow border, and rounded corners
+          asChild
           className="bg-sbf-red text-white hover:bg-sbf-yellow hover:text-sbf-red text-lg px-8 py-6 rounded-md font-semibold shadow-lg transition-colors duration-300 border-2 border-sbf-yellow"
         >
-           {/* Removed the extra div */}
            <Link to="/programme">Créer mon programme</Link>
         </Button>
 
@@ -49,33 +43,27 @@ const Index: React.FC = () => {
         <section className="mt-16 w-full max-w-4xl text-center">
             {/* Title and description for the chart */}
             <h2 className="text-3xl font-bold text-gray-800 mb-8">
-                Suivez l'évolution de vos performances ! {/* Updated heading text */}
+                Suivez l'évolution de vos performances !
             </h2>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                 Enregistrez vos performances, suivez l'évolution de vos charges et restez motivé avec votre historique d'entraînement.
             </p>
-            {/* Removed: Render the table preview component */}
-            {/* <div className="w-full flex justify-center mb-12">
-               <MonEspacePreviewTable />
-            </div> */}
 
             {/* Title specifically for the chart */}
-            <h3 className="text-2xl font-bold text-gray-800 mb-8"> {/* Changed to h3 and slightly smaller */}
+            <h3 className="text-2xl font-bold text-gray-800 mb-8">
                 Tes performances après nous avoir rejoint
             </h3>
 
             {/* Add the animated chart here */}
-            <div className="w-full max-w-3xl mx-auto mb-8"> {/* Wrapper for the chart, added mb-8 */}
+            <div className="w-full max-w-3xl mx-auto mb-8">
                 <StrengthProgressChart />
             </div>
 
              <div className="mt-8">
-                {/* Corrected Button asChild usage */}
                 <Button
                    asChild
                    className="bg-sbf-red text-white hover:bg-sbf-yellow hover:text-sbf-red text-lg px-8 py-6 rounded-md font-semibold shadow-lg transition-colors duration-300 border-2 border-sbf-yellow"
                >
-                  {/* Use the dynamically determined link */}
                   <Link to={monEspaceLink}>Aller à Mon Espace</Link>
                </Button>
              </div>
@@ -92,39 +80,39 @@ const Index: React.FC = () => {
             Le coaching réinventé, c'est surtout
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-white shadow-md flex flex-col items-center text-center p-6"> {/* Added flex, items-center, text-center, p-6 */}
-              <DollarSign size={40} className="text-sbf-red mb-3" /> {/* Added Icon */}
-              <CardHeader className="p-0 mb-3"> {/* Adjusted padding */}
-                <CardTitle className="text-gray-800 text-xl font-semibold">ÉCONOMISEZ GROS</CardTitle> {/* Changed text color */}
+            <Card className="bg-white shadow-md flex flex-col items-center text-center p-6">
+              <DollarSign size={40} className="text-sbf-red mb-3" />
+              <CardHeader className="p-0 mb-3">
+                <CardTitle className="text-gray-800 text-xl font-semibold">ÉCONOMISEZ GROS</CardTitle>
               </CardHeader>
-              <CardContent className="p-0"> {/* Adjusted padding */}
+              <CardContent className="p-0">
                 <p className="text-gray-600">L'efficacité d'un pro, le prix en moins.</p>
               </CardContent>
             </Card>
-            <Card className="bg-white shadow-md flex flex-col items-center text-center p-6"> {/* Added flex, items-center, text-center, p-6 */}
-              <Target size={40} className="text-sbf-red mb-3" /> {/* Added Icon */}
-              <CardHeader className="p-0 mb-3"> {/* Adjusted padding */}
-                <CardTitle className="text-gray-800 text-xl font-semibold">SUR MESURE TOTAL</CardTitle> {/* Changed text color */}
+            <Card className="bg-white shadow-md flex flex-col items-center text-center p-6">
+              <Target size={40} className="text-sbf-red mb-3" />
+              <CardHeader className="p-0 mb-3">
+                <CardTitle className="text-gray-800 text-xl font-semibold">SUR MESURE TOTAL</CardTitle>
               </CardHeader>
-              <CardContent className="p-0"> {/* Adjusted padding */}
+              <CardContent className="p-0">
                 <p className="text-gray-600">Un programme unique, fait pour vous.</p>
               </CardContent>
             </Card>
-            <Card className="bg-white shadow-md flex flex-col items-center text-center p-6"> {/* Added flex, items-center, text-center, p-6 */}
-              <Clock size={40} className="text-sbf-red mb-3" /> {/* Added Icon */}
-              <CardHeader className="p-0 mb-3"> {/* Adjusted padding */}
-                <CardTitle className="text-gray-800 text-xl font-semibold">LIBERTÉ MAXIMALE</CardTitle> {/* Changed text color */}
+            <Card className="bg-white shadow-md flex flex-col items-center text-center p-6">
+              <Clock size={40} className="text-sbf-red mb-3" />
+              <CardHeader className="p-0 mb-3">
+                <CardTitle className="text-gray-800 text-xl font-semibold">LIBERTÉ MAXIMALE</CardTitle>
               </CardHeader>
-              <CardContent className="p-0"> {/* Adjusted padding */}
+              <CardContent className="p-0">
                 <p className="text-gray-600">Entraînez-vous où et quand vous voulez.</p>
               </CardContent>
             </Card>
-            <Card className="bg-white shadow-md flex flex-col items-center text-center p-6"> {/* Added flex, items-center, text-center, p-6 */}
-              <LineChart size={40} className="text-sbf-red mb-3" /> {/* Added Icon */}
-              <CardHeader className="p-0 mb-3"> {/* Adjusted padding */}
-                <CardTitle className="text-gray-800 text-xl font-semibold">RÉSULTATS VISIBLES</CardTitle> {/* Changed text color */}
+            <Card className="bg-white shadow-md flex flex-col items-center text-center p-6">
+              <LineChart size={40} className="text-sbf-red mb-3" />
+              <CardHeader className="p-0 mb-3">
+                <CardTitle className="text-gray-800 text-xl font-semibold">RÉSULTATS VISIBLES</CardTitle>
               </CardHeader>
-              <CardContent className="p-0"> {/* Adjusted padding */}
+              <CardContent className="p-0">
                 <p className="text-gray-600">Progressez plus vite grâce à un plan optimisé.</p>
               </CardContent>
             </Card>
@@ -137,40 +125,76 @@ const Index: React.FC = () => {
 
 
         {/* Benefits Section 2 - Life Improvement */}
-        <section className="mt-16 w-full max-w-4xl text-left"> {/* Align text left */}
-           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center"> {/* Center heading */}
+        <section className="mt-16 w-full max-w-4xl text-left">
+           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
              Comment SmoothieBananeFraise va changer votre vie
            </h2>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> {/* Two columns on medium screens */}
-             <div className="flex items-start space-x-4"> {/* Align items to start */}
-               <Zap size={30} className="text-sbf-red flex-shrink-0 mt-1" /> {/* Icon */}
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+             <div className="flex items-start space-x-4">
+               <Zap size={30} className="text-sbf-red flex-shrink-0 mt-1" />
                <div>
                  <p className="font-bold text-gray-800">Plus d'énergie au quotidien</p>
                  <p className="text-gray-600 text-sm">Un corps plus fort, c'est une vitalité décuplée pour affronter vos journées.</p>
                </div>
              </div>
              <div className="flex items-start space-x-4">
-               <Heart size={30} className="text-sbf-red flex-shrink-0 mt-1" /> {/* Icon */}
+               <Heart size={30} className="text-sbf-red flex-shrink-0 mt-1" />
                <div>
                  <p className="font-bold text-gray-800">Meilleure santé globale</p>
                  <p className="text-gray-600 text-sm">Réduisez les risques de maladies et améliorez votre bien-être général.</p>
                </div>
              </div>
              <div className="flex items-start space-x-4">
-               <Scale size={30} className="text-sbf-red flex-shrink-0 mt-1" /> {/* Icon */}
+               <Scale size={30} className="text-sbf-red flex-shrink-0 mt-1" />
                <div>
                  <p className="font-bold text-gray-800">Confiance en soi boostée</p>
                  <p className="text-gray-600 text-sm">Voir votre corps se transformer renforce votre estime et votre mental.</p>
                </div>
              </div>
              <div className="flex items-start space-x-4">
-               <Dumbbell size={30} className="text-sbf-red flex-shrink-0 mt-1" /> {/* Icon */}
+               <Dumbbell size={30} className="text-sbf-red flex-shrink-0 mt-1" />
                <div>
                  <p className="font-bold text-gray-800">Des résultats concrets et durables</p>
                  <p className="text-gray-600 text-sm">Suivez un plan structuré pour atteindre vos objectifs physiques efficacement.</p>
                </div>
              </div>
            </div>
+        </section>
+
+        {/* Separator Line */}
+        <hr className="w-full max-w-4xl my-12 border-gray-300" />
+
+        {/* FAQ Section */}
+        <section className="mt-16 w-full max-w-3xl text-left">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+            Questions Fréquentes (FAQ)
+          </h2>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="text-lg font-semibold text-gray-800">Comment fonctionne le générateur de programme ?</AccordionTrigger>
+              <AccordionContent className="text-gray-700">
+                Notre générateur de programme utilise un algorithme avancé qui prend en compte vos objectifs, votre niveau d'expérience, le matériel disponible et le nombre de jours d'entraînement pour créer un plan sur mesure.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2">
+              <AccordionTrigger className="text-lg font-semibold text-gray-800">Le coach virtuel est-il un vrai coach ?</AccordionTrigger>
+              <AccordionContent className="text-gray-700">
+                Le coach virtuel est une intelligence artificielle entraînée pour vous donner des conseils de musculation et de nutrition. Il est disponible 24h/24 et 7j/7 pour répondre à vos questions. Pour un coaching humain et personnalisé, consultez nos offres de coaching premium.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3">
+              <AccordionTrigger className="text-lg font-semibold text-gray-800">Puis-je suivre ma progression ?</AccordionTrigger>
+              <AccordionContent className="text-gray-700">
+                Oui, dans votre espace personnel, vous pouvez enregistrer vos performances pour chaque séance et suivre l'évolution de vos charges et de votre poids corporel au fil du temps.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-4">
+              <AccordionTrigger className="text-lg font-semibold text-gray-800">Comment puis-je annuler mon abonnement ?</AccordionTrigger>
+              <AccordionContent className="text-gray-700">
+                Vous pouvez gérer et annuler votre abonnement à tout moment via le portail de facturation Stripe, accessible depuis votre espace personnel.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </section>
 
       </main>
