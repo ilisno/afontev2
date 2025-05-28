@@ -373,8 +373,59 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                   }
               }
 
-              // Fill remaining slots with random accessories
-              const remainingAccessories = shuffleArray(availableAccessoryExercises.filter(ex => !addedAccessoryNames.has(ex.name)));
+              // --- Arm Isolation Balancing Logic ---
+              const availableBicepsIsolationToday = availableExercises.filter(ex => ex.muscleGroup === "Biceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère"));
+              const availableTricepsIsolationToday = availableExercises.filter(ex => ex.muscleGroup === "Triceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère"));
+
+              const shuffledBiceps = shuffleArray(availableBicepsIsolationToday);
+              const shuffledTriceps = shuffleArray(availableTricepsIsolationToday);
+
+              let bicepIdx = 0;
+              let tricepIdx = 0;
+
+              // Add in pairs first
+              while (exercisesAddedCount < maxExercisesPerDay && bicepIdx < shuffledBiceps.length && tricepIdx < shuffledTriceps.length) {
+                  let addedBicep = false;
+                  let addedTricep = false;
+
+                  // Try to add a bicep exercise
+                  if (addAccessoryIfPossible(shuffledBiceps[bicepIdx])) {
+                      addedBicep = true;
+                  }
+                  bicepIdx++;
+
+                  // Try to add a tricep exercise
+                  if (exercisesAddedCount < maxExercisesPerDay && addAccessoryIfPossible(shuffledTriceps[tricepIdx])) {
+                      addedTricep = true;
+                  }
+                  tricepIdx++;
+
+                  // If neither was added, break to avoid infinite loop if no more can be added
+                  if (!addedBicep && !addedTricep) {
+                      break;
+                  }
+              }
+
+              // Add any remaining biceps if space allows
+              while (exercisesAddedCount < maxExercisesPerDay && bicepIdx < shuffledBiceps.length) {
+                  if (!addAccessoryIfPossible(shuffledBiceps[bicepIdx])) {
+                      break; // Cannot add more
+                  }
+                  bicepIdx++;
+              }
+
+              // Add any remaining triceps if space allows
+              while (exercisesAddedCount < maxExercisesPerDay && tricepIdx < shuffledTriceps.length) {
+                  if (!addAccessoryIfPossible(shuffledTriceps[tricepIdx])) {
+                      break; // Cannot add more
+                  }
+                  tricepIdx++;
+              }
+
+              // Fill remaining slots with random accessories (excluding arms already handled)
+              const remainingAccessories = shuffleArray(availableAccessoryExercises.filter(ex =>
+                  !addedAccessoryNames.has(ex.name) && ex.muscleGroup !== "Biceps" && ex.muscleGroup !== "Triceps"
+              ));
               for (const ex of remainingAccessories) {
                   if (addAccessoryIfPossible(ex)) {
                       // If added, continue to next
@@ -558,45 +609,65 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       // Add secondary compounds (up to 2-3 per day if available and targeted)
       shuffleArray(secondaryCompounds).slice(0, Math.min(secondaryCompounds.length, 3)).forEach(addSimpleExerciseIfPossible);
 
-      // --- Arm Isolation Balancing Logic ---
-      // Separate biceps exercises into preferred and reverse curls
-      const preferredBicepsIsolation = availableBicepsIsolationToday.filter(ex =>
-          ["Curl biceps barre", "Curl incliné haltères", "Preacher curl"].includes(ex.name)
-      );
-      const reverseCurlsIsolation = availableBicepsIsolationToday.filter(ex => ex.name === "Reverse curls");
+      // --- Arm Isolation Balancing Logic (for non-5/3/1) ---
+      const shuffledBiceps = shuffleArray(availableBicepsIsolationToday);
+      const shuffledTriceps = shuffleArray(availableTricepsIsolationToday);
 
-      // Combine preferred and reverse curls, prioritizing preferred
-      const availableBicepsToAdd = [
-          ...shuffleArray(preferredBicepsIsolation),
-          ...shuffleArray(reverseCurlsIsolation)
-      ].filter(ex => !addedExerciseNames.has(ex.name)); // Filter out already added exercises
+      let bicepIdx = 0;
+      let tricepIdx = 0;
 
-      const availableTricepsToAdd = availableTricepsIsolationToday.filter(ex => !addedExerciseNames.has(ex.name));
-      const shuffledAvailableTriceps = shuffleArray(availableTricepsToAdd);
+      // Add in pairs first
+      while (exercisesAddedCount < maxExercisesPerDay && bicepIdx < shuffledBiceps.length && tricepIdx < shuffledTriceps.length) {
+          let addedBicep = false;
+          let addedTricep = false;
 
-      // Add biceps and triceps in pairs if possible, prioritizing preferred biceps
-      const maxArmPairsToAim = Math.min(Math.floor((maxExercisesPerDay - exercisesAddedCount) / 2), Math.min(availableBicepsToAdd.length, shuffledAvailableTriceps.length));
+          // Try to add a bicep exercise
+          if (addSimpleExerciseIfPossible(shuffledBiceps[bicepIdx])) {
+              addedBicep = true;
+          }
+          bicepIdx++;
 
-      for(let i = 0; i < maxArmPairsToAim; i++) {
-          addSimpleExerciseIfPossible(availableBicepsToAdd[i]);
-          addSimpleExerciseIfPossible(shuffledAvailableTriceps[i]);
+          // Try to add a tricep exercise
+          if (exercisesAddedCount < maxExercisesPerDay && addSimpleExerciseIfPossible(shuffledTriceps[tricepIdx])) {
+              addedTricep = true;
+          }
+          tricepIdx++;
+
+          // If neither was added, break to avoid infinite loop if no more can be added
+          if (!addedBicep && !addedTricep) {
+              break;
+          }
       }
 
-      // Add any remaining preferred biceps or triceps if space allows
-      const remainingPreferredBiceps = preferredBicepsIsolation.filter(ex => !addedExerciseNames.has(ex.name));
-      const remainingTriceps = availableTricepsIsolationToday.filter(ex => !addedExerciseNames.has(ex.name));
+      // Add any remaining biceps if space allows
+      while (exercisesAddedCount < maxExercisesPerDay && bicepIdx < shuffledBiceps.length) {
+          if (!addSimpleExerciseIfPossible(shuffledBiceps[bicepIdx])) {
+              break; // Cannot add more
+          }
+          bicepIdx++;
+      }
 
-      shuffleArray(remainingPreferredBiceps).forEach(addSimpleExerciseIfPossible);
-      shuffleArray(remainingTriceps).forEach(addSimpleExerciseIfPossible);
-
+      // Add any remaining triceps if space allows
+      while (exercisesAddedCount < maxExercisesPerDay && tricepIdx < shuffledTriceps.length) {
+          if (!addSimpleExerciseIfPossible(shuffledTriceps[tricepIdx])) {
+              break; // Cannot add more
+          }
+          tricepIdx++;
+      }
 
       // Add remaining other isolation exercises (abs, calves, shoulders, etc.)
-      const availableOtherIsolationToAdd = availableOtherIsolationToday.filter(ex => !addedExerciseNames.has(ex.name));
-      shuffleArray(availableOtherIsolationToAdd).forEach(addSimpleExerciseIfPossible);
+      const remainingAccessories = shuffleArray(availableAccessoryExercises.filter(ex =>
+          !addedExerciseNames.has(ex.name) && ex.muscleGroup !== "Biceps" && ex.muscleGroup !== "Triceps"
+      ));
+      for (const ex of remainingAccessories) {
+          if (addSimpleExerciseIfPossible(ex)) {
+              // If added, continue to next
+          }
+      }
 
 
       // Ensure total exercises don't exceed maxExercisesPerDay (redundant with addSimpleExerciseIfPossible checks, but safe)
-      const finalDayExercises = dayExercises.slice(0, maxExercisesAddedCount); // Use exercisesAddedCount here
+      const finalDayExercises = dayExercises.slice(0, exercisesAddedCount); // Use exercisesAddedCount here
 
 
       // Format exercises for the program structure and calculate RPE
