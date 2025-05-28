@@ -211,6 +211,11 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
   // Groups subject to the 2-exercise per day limit
   const limitedDailyExerciseGroups: MuscleGroup[] = ["Jambes", "Pectoraux", "Dos"];
 
+  // Define a pool of accessory exercises available for selection
+  const availableAccessoryExercises = availableExercises.filter(ex =>
+      ex.category === "Compound secondaire" || ex.category === "Isolation lourde" || ex.category === "Isolation légère"
+  );
+
   // Initialize the program structure
   const program: Program = {
       title: "", // Will be set based on objective
@@ -324,11 +329,6 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
               });
 
               // --- Accessory Selection for 5/3/1 ---
-              const availableAccessoryExercises = availableExercises.filter(ex =>
-                  ex.category === "Compound secondaire" || ex.category === "Isolation lourde" || ex.category === "Isolation légère"
-              );
-
-              const numAccessoriesToAdd = objectif === "Powerbuilding" ? 4 : 3; // Powerbuilding gets more accessories
               const addedAccessoryNames = new Set<string>(); // To prevent duplicate accessories on the same day
 
               // Helper to add accessory exercise if possible
@@ -627,11 +627,6 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       const heavyIsolations = availableExercisesForToday.filter(ex => ex.category === "Isolation lourde");
       const lightIsolations = availableExercisesForToday.filter(ex => ex.category === "Isolation légère");
 
-      // Separate available arm isolation exercises for today
-      const availableBicepsIsolationToday = availableExercisesForToday.filter(ex => ex.muscleGroup === "Biceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère"));
-      const availableTricepsIsolationToday = availableExercisesForToday.filter(ex => ex.muscleGroup === "Triceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère"));
-      const availableOtherIsolationToday = availableExercisesForToday.filter(ex => ex.muscleGroup !== "Biceps" && ex.muscleGroup !== "Triceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère"));
-
 
       // --- Add exercises based on category priority, priority muscles, and limits ---
       // Add powerlifting exercises first (up to 1-2 per day if available and targeted)
@@ -641,6 +636,9 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       shuffleArray(secondaryCompounds).slice(0, Math.min(secondaryCompounds.length, 3)).forEach(addSimpleExerciseIfPossible);
 
       // --- Arm Isolation Balancing Logic (for non-5/3/1) ---
+      const availableBicepsIsolationToday = availableExercisesForToday.filter(ex => ex.muscleGroup === "Biceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère"));
+      const availableTricepsIsolationToday = availableExercisesForToday.filter(ex => ex.muscleGroup === "Triceps" && (ex.category === "Isolation lourde" || ex.category === "Isolation légère"));
+
       const shuffledBiceps = shuffleArray(availableBicepsIsolationToday);
       const shuffledTriceps = shuffleArray(availableTricepsIsolationToday);
 
