@@ -173,7 +173,7 @@ const Index: React.FC = () => {
             <AccordionItem value="item-1">
               <AccordionTrigger className="text-lg font-semibold text-gray-800">Comment fonctionne le générateur de programme ?</AccordionTrigger>
               <AccordionContent className="text-gray-700">
-                Notre générateur de programme utilise un algorithme avancé qui prend en compte vos objectifs, votre niveau d'expérience, le matériel disponible et le nombre de jours d'entraînement pour créer un plan sur mesure.
+                Notre générateur de programme utilise un algorithme avancé qui prend en compte vos objectifs, votre niveau d'expérience, le matériel disponible et le nombre de jours d'entraînement pour créer un plan sur mesure. <Link to="/programme" className="text-sbf-red hover:underline font-semibold">Essayez-le gratuitement ici !</Link>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
@@ -189,6 +189,12 @@ const Index: React.FC = () => {
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
+              <AccordionTrigger className="text-lg font-semibold text-gray-800">Y a-t-il un essai gratuit ?</AccordionTrigger>
+              <AccordionContent className="text-gray-700">
+                Oui, nous offrons un essai gratuit de 14 jours pour notre abonnement Premium. Vous pouvez générer votre programme et commencer à l'utiliser sans engagement. <Link to="/tarifs" className="text-sbf-red hover:underline font-semibold">Découvrez nos tarifs et l'essai gratuit ici.</Link>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-5">
               <AccordionTrigger className="text-lg font-semibold text-gray-800">Comment puis-je annuler mon abonnement ?</AccordionTrigger>
               <AccordionContent className="text-gray-700">
                 Vous pouvez gérer et annuler votre abonnement à tout moment via le portail de facturation Stripe, accessible depuis votre espace personnel.
