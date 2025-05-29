@@ -99,7 +99,7 @@ const StrengthProgressChart: React.FC = () => {
               dot={false} // Hide dots for a smoother curve
               // dot={{ stroke: 'hsl(var(--afonte-red))', strokeWidth: 2, r: 4 }} // Styled dots
               // activeDot={{ r: 6 }} // Larger dot on hover
-              animationDuration={1500} // Animation duration
+              animationDuration={3000} // Animation duration increased to 3 seconds
               animationEasing="ease-out" // Animation easing
             />
           </LineChart>
