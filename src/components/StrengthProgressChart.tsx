@@ -95,10 +95,10 @@ const StrengthProgressChart: React.FC = () => {
             <Line
               type="monotone"
               dataKey="perfs" // Use the new data key
-              stroke="hsl(var(--sbf-red))" // Use your custom red color
+              stroke="hsl(var(--afonte-red))" // Use your custom red color
               strokeWidth={3} // Thicker line
               dot={false} // Hide dots for a smoother curve
-              // dot={{ stroke: 'hsl(var(--sbf-red))', strokeWidth: 2, r: 4 }} // Styled dots
+              // dot={{ stroke: 'hsl(var(--afonte-red))', strokeWidth: 2, r: 4 }} // Styled dots
               // activeDot={{ r: 6 }} // Larger dot on hover
               animationDuration={1500} // Animation duration
               animationEasing="ease-out" // Animation easing

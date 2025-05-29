@@ -328,7 +328,7 @@ const ProgrammeGenerator: React.FC = () => {
                <p>
                  Pour accéder au programme complet, suivre vos performances semaine après semaine et l'enregistrer dans votre espace personnel, vous devez être abonné.
                  {/* Updated button style */}
-                 <Link to="/tarifs" className="inline-block ml-4 px-4 py-2 bg-sbf-red text-white hover:bg-red-700 rounded-md font-semibold transition-colors duration-200">
+                 <Link to="/tarifs" className="inline-block ml-4 px-4 py-2 bg-afonte-red text-white hover:bg-red-700 rounded-md font-semibold transition-colors duration-200">
                    Voir les tarifs
                  </Link>
                </p>
@@ -387,7 +387,7 @@ const ProgrammeGenerator: React.FC = () => {
                                            exercise.setsDetails.map((set, setIndex) => (
                                              <TableRow key={setIndex}>
                                                <TableCell className="text-center">{set.setNumber}</TableCell>
-                                               <TableCell className={cn("text-center", set.isAmrap && 'font-bold text-sbf-red')}>
+                                               <TableCell className={cn("text-center", set.isAmrap && 'font-bold text-afonte-red')}>
                                                   <span className={cn(isNotLoggedIn && 'blur-sm')}>
                                                      {set.reps} {set.isAmrap && '(AMRAP)'}
                                                   </span>
@@ -993,7 +993,7 @@ const ProgrammeGenerator: React.FC = () => {
                 />
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full bg-sbf-red text-white hover:bg-red-700 text-lg py-6" disabled={isSubmitting}>
+                <Button type="submit" className="w-full bg-afonte-red text-white hover:bg-red-700 text-lg py-6" disabled={isSubmitting}>
                   {isSubmitting ? 'Génération en cours...' : 'Générer mon programme'}
                 </Button>
               </form>

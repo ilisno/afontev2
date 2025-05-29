@@ -25,9 +25,9 @@ const Merci2: React.FC = () => {
               Félicitations pour avoir choisi le coaching personnalisé ! Pour commencer, veuillez nous envoyer un email à l'adresse ci-dessous en expliquant votre situation actuelle, vos objectifs, votre expérience et tout autre détail pertinent.
             </p>
             <p className="text-gray-800 font-semibold">
-              Email : <a href={mailtoLink} className="text-sbf-red hover:underline">{emailAddress}</a>
+              Email : <a href={mailtoLink} className="text-afonte-red hover:underline">{emailAddress}</a>
             </p>
-            <Button asChild className="w-full bg-sbf-red text-white hover:bg-red-700 text-lg py-6">
+            <Button asChild className="w-full bg-afonte-red text-white hover:bg-red-700 text-lg py-6">
               <a href={mailtoLink}>Envoyer mon email de contact</a>
             </Button>
           </CardContent>

@@ -17,10 +17,10 @@ const APropos: React.FC = () => {
           </CardHeader>
           <CardContent className="p-6">
             <div className="prose prose-lg max-w-none mx-auto text-gray-800">
-              <p>Bienvenue chez àFonte, votre partenaire dédié à la transformation physique et à l'optimisation de vos performances en musculation.</p>
+              <p>Bienvenue chez AFonte, votre partenaire dédié à la transformation physique et à l'optimisation de vos performances en musculation.</p>
               <p>Nous croyons que chacun mérite un programme d'entraînement adapté à ses objectifs, son niveau et son matériel disponible, sans avoir à dépenser une fortune en coaching traditionnel.</p>
               <p>Notre plateforme combine l'expertise de coachs expérimentés avec la puissance de l'intelligence artificielle pour vous offrir des programmes sur mesure, un suivi de progression intuitif et un coach virtuel toujours disponible pour répondre à vos questions.</p>
-              <p>Rejoignez la communauté àFonte et commencez dès aujourd'hui votre parcours vers une meilleure version de vous-même !</p>
+              <p>Rejoignez la communauté AFonte et commencez dès aujourd'hui votre parcours vers une meilleure version de vous-même !</p>
             </div>
           </CardContent>
         </Card>

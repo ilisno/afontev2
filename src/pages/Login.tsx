@@ -102,9 +102,9 @@ function Login() {
               variables: {
                 default: {
                   colors: {
-                    brand: 'hsl(var(--sbf-red))', // Use your custom red color
-                    brandAccent: 'hsl(var(--sbf-yellow))', // Use your custom yellow color
-                    anchor: 'hsl(var(--sbf-red))', // Make links red
+                    brand: 'hsl(var(--afonte-red))', // Use your custom red color
+                    brandAccent: 'hsl(var(--afonte-yellow))', // Use your custom yellow color
+                    anchor: 'hsl(var(--afonte-red))', // Make links red
                   },
                 },
               },
