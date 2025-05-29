@@ -5,7 +5,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  // Removed: Tooltip,
   ResponsiveContainer,
 } from 'recharts';
 import { cn } from '@/lib/utils'; // Assuming cn utility is available
@@ -90,8 +90,7 @@ const StrengthProgressChart: React.FC = () => {
                tickLine={false} // Hide Y axis tick lines
                axisLine={false} // Hide Y axis line
             />
-            <Tooltip />
-            {/* Animated Line */}
+            {/* Removed Tooltip component */}
             <Line
               type="monotone"
               dataKey="perfs" // Use the new data key
