@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription as CardDescriptionShadcn } from "@/components/ui/card";
 
 const Merci2: React.FC = () => {
-  const emailAddress = "equipe@smoothiebananefraise.fr";
+  const emailAddress = "equipe@afonte.fr";
   const subject = "Mon coaching personnalisé - Prise de contact";
   const mailtoLink = `mailto:${emailAddress}?subject=${encodeURIComponent(subject)}`;
 

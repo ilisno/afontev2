@@ -127,7 +127,7 @@ const Index: React.FC = () => {
         {/* Benefits Section 2 - Life Improvement */}
         <section className="mt-16 w-full max-w-4xl text-left">
            <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-             Comment SmoothieBananeFraise va changer votre vie
+             Comment àFonte va changer votre vie
            </h2>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              <div className="flex items-start space-x-4">

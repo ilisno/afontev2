@@ -18,7 +18,7 @@ const CGV: React.FC = () => {
           <CardContent className="p-6">
             <div className="prose prose-lg max-w-none mx-auto text-gray-800">
               <h2 className="text-xl font-bold mb-2">Article 1 – Objet</h2>
-              <p>Les présentes conditions générales de vente régissent les ventes de programmes de musculation personnalisés sous forme d’abonnements mensuels sur le site smoothiebananefraise.fr.</p>
+              <p>Les présentes conditions générales de vente régissent les ventes de programmes de musculation personnalisés sous forme d’abonnements mensuels sur le site àfonte.fr.</p>
 
               <h2 className="text-xl font-bold mt-6 mb-2">Article 2 – Prestations proposées</h2>
               <p>L’utilisateur achète un accès personnalisé à un programme d’entraînement en ligne généré automatiquement selon les informations fournies.</p>

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription as CardDescri
 import { Mail, Phone } from 'lucide-react'; // Import icons
 
 const Contact: React.FC = () => {
-  const emailAddress = "equipe@smoothiebananefraise.fr";
+  const emailAddress = "equipe@afonte.fr";
   const phoneNumber = "[à compléter]"; // Placeholder for phone number
 
   return (
