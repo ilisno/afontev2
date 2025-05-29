@@ -55,8 +55,8 @@ const Header: React.FC = () => {
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo with Image and Text */}
         <Link to="/" className="flex items-center z-20" onClick={closeMenu}>
-          <img src="/logo.png" alt="àFonte coaching logo" className="h-10 w-auto" />
-          <span className="ml-2 text-xl font-bold text-gray-800">àFonte</span>
+          <img src="/logo.png" alt="AFonte coaching logo" className="h-10 w-auto" />
+          <span className="ml-2 text-xl font-bold text-gray-800">AFonte</span>
         </Link>
 
         {/* Mobile Menu Button */}
