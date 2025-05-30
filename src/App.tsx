@@ -16,10 +16,11 @@ import Merci1 from "./pages/Merci1";
 import Merci2 from "./pages/Merci2";
 import MentionsLegales from "./pages/MentionsLegales";
 import CGV from "./pages/CGV";
-import Confidentialite from "./pages/Confidentialite"; // Import Confidentialite
-import APropos from "./pages/APropos"; // Import APropos
-import FAQ from "./pages/FAQ"; // Import FAQ
-import Contact from "./pages/Contact"; // Import Contact
+import Confidentialite from "./pages/Confidentialite";
+import APropos from "./pages/APropos";
+import FAQ from "./pages/FAQ";
+import Contact from "./pages/Contact";
+import UpgradeToPremium from "./pages/UpgradeToPremium"; // Import the new component
 import { PopupProvider } from "./contexts/PopupContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
@@ -47,10 +48,11 @@ const App = () => (
               <Route path="/merci2" element={<Merci2 />} />
               <Route path="/mentions-legales" element={<MentionsLegales />} />
               <Route path="/cgv" element={<CGV />} />
-              <Route path="/confidentialite" element={<Confidentialite />} /> {/* Add Confidentialite route */}
-              <Route path="/a-propos" element={<APropos />} /> {/* Add APropos route */}
-              <Route path="/faq" element={<FAQ />} /> {/* Add FAQ route */}
-              <Route path="/contact" element={<Contact />} /> {/* Add Contact route */}
+              <Route path="/confidentialite" element={<Confidentialite />} />
+              <Route path="/a-propos" element={<APropos />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/upgrade-to-premium" element={<UpgradeToPremium />} /> {/* Add new route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </PopupProvider>

@@ -293,6 +293,36 @@ const ProgrammeGenerator: React.FC = () => {
 
   // Handle form submission - show popup first
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true); // Set submitting state early
+
+    // Check for free program generation limit if user is NOT logged in
+    if (!session) {
+        if (values.email) { // Only apply limit if an email is provided for tracking
+            const { data: existingLogs, error: logCheckError } = await supabase
+                .from('program_logs')
+                .select('id')
+                .eq('user_email', values.email);
+
+            if (logCheckError) {
+                console.error("Error checking existing program logs:", logCheckError);
+                showError("Une erreur est survenue lors de la vérification de vos programmes.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            if (existingLogs && existingLogs.length > 0) {
+                // User has already generated a program with this email
+                console.log("User has already generated a free program with this email. Redirecting to upgrade page.");
+                showError("Vous avez déjà généré un programme gratuit avec cet email.");
+                setIsSubmitting(false);
+                navigate('/upgrade-to-premium'); // Redirect to the new upgrade page
+                return; // Stop further execution
+            }
+        }
+    }
+
+    // If we reach here, either user is logged in, or not logged in but no previous program found for the email.
+    // Proceed with showing popup and then generating/saving.
     console.log("Form submitted, showing random popup...");
     setFormData(values); // Store form data temporarily
 
