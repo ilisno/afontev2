@@ -223,9 +223,18 @@ const ProgrammeGenerator: React.FC = () => {
      try {
        // --- Call the client-side generator ---
        console.log("[generateAndSaveProgram] Calling generateProgramClientSide...");
-       const program = generateProgramClientSide(values as ProgramFormData);
+       let program: Program;
+       try {
+           program = generateProgramClientSide(values as ProgramFormData);
+           console.log("[generateAndSaveProgram] Program generated successfully:", program);
+       } catch (generatorError: any) {
+           console.error("[generateAndSaveProgram] Error during client-side program generation:", generatorError);
+           showError(`Erreur lors de la génération du programme: ${generatorError.message || generatorError}`);
+           setIsSubmitting(false);
+           return; // Stop execution if generation fails
+       }
        setGeneratedProgram(program);
-       console.log("[generateAndSaveProgram] Program generated:", program);
+
 
        // --- Insert form data into program_logs table (always log generation attempt) ---
        // This insertion will now trigger the SQL FUNCTION to add email to email_subscribers
