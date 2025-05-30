@@ -22,7 +22,7 @@ const Merci1: React.FC = () => {
               Vous avez maintenant accès à nos outils pour vous aider à transformer votre physique.
             </p>
             <div className="flex flex-col space-y-4">
-              <Button asChild className="w-full bg-afonte-red text-white hover:bg-red-700 text-lg py-6">
+              <Button asChild className="w-full bg-sbf-red text-white hover:bg-red-700 text-lg py-6">
                 <Link to="/programme">Générer mon premier programme</Link>
               </Button>
               <Button asChild variant="outline" className="w-full text-gray-800 border-gray-300 hover:bg-gray-200 text-lg py-6">

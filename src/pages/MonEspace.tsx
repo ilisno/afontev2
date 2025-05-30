@@ -426,14 +426,14 @@ const MonEspace: React.FC = () => {
                    />
                    {/* This button doesn't actually log in, it's just part of the prompt */}
                    {/* The actual login link is below */}
-                   <Button type="submit" className="w-full bg-afonte-red text-white hover:bg-red-700">
+                   <Button type="submit" className="w-full bg-sbf-red text-white hover:bg-red-700">
                      Continuer
                    </Button>
                  </form>
                </Form>
                <div className="mt-4 text-center">
                   {/* Corrected Button asChild usage - Removed the extra div */}
-                  <Button asChild variant="link" className="text-afonte-red hover:underline">
+                  <Button asChild variant="link" className="text-sbf-red hover:underline">
                      <Link to="/login">Aller à la page de connexion complète</Link>
                   </Button>
                </div>
@@ -564,7 +564,7 @@ const MonEspace: React.FC = () => {
                                                               />
                                                               <span className="flex-shrink-0">Reps</span>
                                                               {/* Display AMRAP next to Reps input on mobile */}
-                                                              {set.isAmrap && <span className="text-afonte-red font-bold ml-1">(AMRAP)</span>}
+                                                              {set.isAmrap && <span className="text-sbf-red font-bold ml-1">(AMRAP)</span>}
                                                               <Input
                                                                  type="number"
                                                                  placeholder={`${set.calculatedWeight}`} // Use calculated weight as placeholder for 5/3/1
@@ -573,7 +573,7 @@ const MonEspace: React.FC = () => {
                                                                  className="w-20 text-center"
                                                               />
                                                               <span className="flex-shrink-0">kg</span>
-                                                              {set.isAmrap && <span className="text-afonte-red font-bold ml-2">(AMRAP)</span>} {/* Highlight AMRAP */}
+                                                              {set.isAmrap && <span className="text-sbf-red font-bold ml-2">(AMRAP)</span>} {/* Highlight AMRAP */}
                                                            </div>
                                                        ))
                                                     ) : (
@@ -662,7 +662,7 @@ const MonEspace: React.FC = () => {
                                                     </TableCell>
                                                   )}
                                                   <TableCell className="text-center">{set.setNumber}</TableCell>
-                                                  <TableCell className={cn("text-center", set.isAmrap && 'font-bold text-afonte-red')}>
+                                                  <TableCell className={cn("text-center", set.isAmrap && 'font-bold text-sbf-red')}>
                                                     <Input
                                                        type="text" // Use text to allow ranges like "8-12"
                                                        placeholder={set.reps} // Use 5/3/1 specific reps as placeholder
@@ -762,7 +762,7 @@ const MonEspace: React.FC = () => {
                                 <Button
                                    onClick={() => handleSaveDayWorkout(week.weekNumber, day.dayNumber)}
                                    disabled={isSavingWorkout}
-                                   className="bg-afonte-red text-white hover:bg-red-700"
+                                   className="bg-sbf-red text-white hover:bg-red-700"
                                 >
                                    {isSavingWorkout ? (
                                       <>
@@ -851,7 +851,7 @@ const MonEspace: React.FC = () => {
                   <p>Aucun programme trouvé pour votre compte.</p>
                   <div className="mt-4">
                      {/* Corrected Button asChild usage */}
-                     <Button asChild className="bg-afonte-red text-white hover:bg-red-700">
+                     <Button asChild className="bg-sbf-red text-white hover:bg-red-700">
                        {/* Removed the extra div */}
                        <Link to="/programme">Générer mon premier programme</Link>
                      </Button>

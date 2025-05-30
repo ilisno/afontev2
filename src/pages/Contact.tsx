@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription as CardDescri
 import { Mail, Phone } from 'lucide-react'; // Import icons
 
 const Contact: React.FC = () => {
-  const emailAddress = "equipe@afonte.fr";
+  const emailAddress = "equipe@smoothiebananefraise.fr";
   const phoneNumber = "[à compléter]"; // Placeholder for phone number
 
   return (
@@ -25,15 +25,15 @@ const Contact: React.FC = () => {
             </p>
             <div className="flex flex-col items-center space-y-4">
               <div className="flex items-center space-x-2">
-                <Mail size={24} className="text-afonte-red" />
-                <a href={`mailto:${emailAddress}`} className="text-afonte-red hover:underline text-lg font-semibold">
+                <Mail size={24} className="text-sbf-red" />
+                <a href={`mailto:${emailAddress}`} className="text-sbf-red hover:underline text-lg font-semibold">
                   {emailAddress}
                 </a>
               </div>
               {phoneNumber !== "[à compléter]" && ( // Only show phone if completed
                 <div className="flex items-center space-x-2">
-                  <Phone size={24} className="text-afonte-red" />
-                  <a href={`tel:${phoneNumber.replace(/\s/g, '')}`} className="text-afonte-red hover:underline text-lg font-semibold">
+                  <Phone size={24} className="text-sbf-red" />
+                  <a href={`tel:${phoneNumber.replace(/\s/g, '')}`} className="text-sbf-red hover:underline text-lg font-semibold">
                     {phoneNumber}
                   </a>
                 </div>

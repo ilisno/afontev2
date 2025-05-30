@@ -200,7 +200,7 @@ const ProgrammeGenerator: React.FC = () => {
     if (minutes < 60) return `${minutes} min`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return remainingMinutes === 0 ? `${hours}h` : `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
+    return remainingMinutes === 0 ? `${hours}h` : `${hours}h${remainingMinutes.toString().padStart(2, '0')} min`;
   };
 
   // Options for main lifts selection
@@ -293,36 +293,6 @@ const ProgrammeGenerator: React.FC = () => {
 
   // Handle form submission - show popup first
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true); // Set submitting state early
-
-    // Check for free program generation limit if user is NOT logged in
-    if (!session) {
-        if (values.email) { // Only apply limit if an email is provided for tracking
-            const { data: existingLogs, error: logCheckError } = await supabase
-                .from('program_logs')
-                .select('id')
-                .eq('user_email', values.email);
-
-            if (logCheckError) {
-                console.error("Error checking existing program logs:", logCheckError);
-                showError("Une erreur est survenue lors de la vérification de vos programmes.");
-                setIsSubmitting(false);
-                return;
-            }
-
-            if (existingLogs && existingLogs.length > 0) {
-                // User has already generated a program with this email
-                console.log("User has already generated a free program with this email. Redirecting to upgrade page.");
-                showError("Vous avez déjà généré un programme gratuit avec cet email.");
-                setIsSubmitting(false);
-                navigate('/upgrade-to-premium'); // Redirect to the new upgrade page
-                return; // Stop further execution
-            }
-        }
-    }
-
-    // If we reach here, either user is logged in, or not logged in but no previous program found for the email.
-    // Proceed with showing popup and then generating/saving.
     console.log("Form submitted, showing random popup...");
     setFormData(values); // Store form data temporarily
 
@@ -358,7 +328,7 @@ const ProgrammeGenerator: React.FC = () => {
                <p>
                  Pour accéder au programme complet, suivre vos performances semaine après semaine et l'enregistrer dans votre espace personnel, vous devez être abonné.
                  {/* Updated button style */}
-                 <Link to="/tarifs" className="inline-block ml-4 px-4 py-2 bg-afonte-red text-white hover:bg-red-700 rounded-md font-semibold transition-colors duration-200">
+                 <Link to="/tarifs" className="inline-block ml-4 px-4 py-2 bg-sbf-red text-white hover:bg-red-700 rounded-md font-semibold transition-colors duration-200">
                    Voir les tarifs
                  </Link>
                </p>
@@ -417,7 +387,7 @@ const ProgrammeGenerator: React.FC = () => {
                                            exercise.setsDetails.map((set, setIndex) => (
                                              <TableRow key={setIndex}>
                                                <TableCell className="text-center">{set.setNumber}</TableCell>
-                                               <TableCell className={cn("text-center", set.isAmrap && 'font-bold text-afonte-red')}>
+                                               <TableCell className={cn("text-center", set.isAmrap && 'font-bold text-sbf-red')}>
                                                   <span className={cn(isNotLoggedIn && 'blur-sm')}>
                                                      {set.reps} {set.isAmrap && '(AMRAP)'}
                                                   </span>
@@ -1023,7 +993,7 @@ const ProgrammeGenerator: React.FC = () => {
                 />
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full bg-afonte-red text-white hover:bg-red-700 text-lg py-6" disabled={isSubmitting}>
+                <Button type="submit" className="w-full bg-sbf-red text-white hover:bg-red-700 text-lg py-6" disabled={isSubmitting}>
                   {isSubmitting ? 'Génération en cours...' : 'Générer mon programme'}
                 </Button>
               </form>

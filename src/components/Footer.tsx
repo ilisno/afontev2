@@ -55,9 +55,9 @@ const Footer: React.FC = () => {
         {/* Column 1: Logo and Copyright */}
         <div className="flex flex-col items-center md:items-start text-center md:text-left">
           <Link to="/" className="mb-4">
-            <img src="/logo.png" alt="àFonte coaching logo" className="h-12 w-auto" />
+            <img src="/logo.png" alt="SBF coaching logo" className="h-12 w-auto" />
           </Link>
-          <p className="text-sm">&copy; {new Date().getFullYear()} àFonte.</p>
+          <p className="text-sm">&copy; {new Date().getFullYear()} SmoothieBananeFraise.</p>
           <p className="text-sm">Tous droits réservés.</p>
         </div>
 

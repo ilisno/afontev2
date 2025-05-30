@@ -23,7 +23,7 @@ const Index: React.FC = () => {
         {/* Main Heading and Subtitle */}
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
           Tes outils pour <br className="hidden md:block"/>
-          <span className="bg-afonte-red text-white px-3 py-1 rounded-md inline-block mt-2 md:mt-0">
+          <span className="bg-sbf-red text-white px-3 py-1 rounded-md inline-block mt-2 md:mt-0">
             transformer ton physique
           </span>
         </h1>
@@ -34,7 +34,7 @@ const Index: React.FC = () => {
         {/* Call To Action Button */}
         <Button
           asChild
-          className="bg-afonte-red text-white hover:bg-afonte-yellow hover:text-afonte-red text-lg px-8 py-6 rounded-md font-semibold shadow-lg transition-colors duration-300 border-2 border-afonte-yellow"
+          className="bg-sbf-red text-white hover:bg-sbf-yellow hover:text-sbf-red text-lg px-8 py-6 rounded-md font-semibold shadow-lg transition-colors duration-300 border-2 border-sbf-yellow"
         >
            <Link to="/programme">Créer mon programme gratuitement</Link>
         </Button>
@@ -62,7 +62,7 @@ const Index: React.FC = () => {
              <div className="mt-8">
                 <Button
                    asChild
-                   className="bg-afonte-red text-white hover:bg-afonte-yellow hover:text-afonte-red text-lg px-8 py-6 rounded-md font-semibold shadow-lg transition-colors duration-300 border-2 border-afonte-yellow"
+                   className="bg-sbf-red text-white hover:bg-sbf-yellow hover:text-sbf-red text-lg px-8 py-6 rounded-md font-semibold shadow-lg transition-colors duration-300 border-2 border-sbf-yellow"
                >
                   <Link to={monEspaceLink}>Aller à Mon Espace</Link>
                </Button>
@@ -81,7 +81,7 @@ const Index: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="bg-white shadow-md flex flex-col items-center text-center p-6">
-              <DollarSign size={40} className="text-afonte-red mb-3" />
+              <DollarSign size={40} className="text-sbf-red mb-3" />
               <CardHeader className="p-0 mb-3">
                 <CardTitle className="text-gray-800 text-xl font-semibold">ÉCONOMISEZ GROS</CardTitle>
               </CardHeader>
@@ -90,7 +90,7 @@ const Index: React.FC = () => {
               </CardContent>
             </Card>
             <Card className="bg-white shadow-md flex flex-col items-center text-center p-6">
-              <Target size={40} className="text-afonte-red mb-3" />
+              <Target size={40} className="text-sbf-red mb-3" />
               <CardHeader className="p-0 mb-3">
                 <CardTitle className="text-gray-800 text-xl font-semibold">SUR MESURE TOTAL</CardTitle>
               </CardHeader>
@@ -99,7 +99,7 @@ const Index: React.FC = () => {
               </CardContent>
             </Card>
             <Card className="bg-white shadow-md flex flex-col items-center text-center p-6">
-              <Clock size={40} className="text-afonte-red mb-3" />
+              <Clock size={40} className="text-sbf-red mb-3" />
               <CardHeader className="p-0 mb-3">
                 <CardTitle className="text-gray-800 text-xl font-semibold">LIBERTÉ MAXIMALE</CardTitle>
               </CardHeader>
@@ -108,7 +108,7 @@ const Index: React.FC = () => {
               </CardContent>
             </Card>
             <Card className="bg-white shadow-md flex flex-col items-center text-center p-6">
-              <LineChart size={40} className="text-afonte-red mb-3" />
+              <LineChart size={40} className="text-sbf-red mb-3" />
               <CardHeader className="p-0 mb-3">
                 <CardTitle className="text-gray-800 text-xl font-semibold">RÉSULTATS VISIBLES</CardTitle>
               </CardHeader>
@@ -127,32 +127,32 @@ const Index: React.FC = () => {
         {/* Benefits Section 2 - Life Improvement */}
         <section className="mt-16 w-full max-w-4xl text-left">
            <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-             Comment AFonte va changer votre vie
+             Comment SmoothieBananeFraise va changer votre vie
            </h2>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              <div className="flex items-start space-x-4">
-               <Zap size={30} className="text-afonte-red flex-shrink-0 mt-1" />
+               <Zap size={30} className="text-sbf-red flex-shrink-0 mt-1" />
                <div>
                  <p className="font-bold text-gray-800">Plus d'énergie au quotidien</p>
                  <p className="text-gray-600 text-sm">Un corps plus fort, c'est une vitalité décuplée pour affronter vos journées.</p>
                </div>
              </div>
              <div className="flex items-start space-x-4">
-               <Heart size={30} className="text-afonte-red flex-shrink-0 mt-1" />
+               <Heart size={30} className="text-sbf-red flex-shrink-0 mt-1" />
                <div>
                  <p className="font-bold text-gray-800">Meilleure santé globale</p>
                  <p className="text-gray-600 text-sm">Réduisez les risques de maladies et améliorez votre bien-être général.</p>
                </div>
              </div>
              <div className="flex items-start space-x-4">
-               <Scale size={30} className="text-afonte-red flex-shrink-0 mt-1" />
+               <Scale size={30} className="text-sbf-red flex-shrink-0 mt-1" />
                <div>
                  <p className="font-bold text-gray-800">Confiance en soi boostée</p>
                  <p className="text-gray-600 text-sm">Voir votre corps se transformer renforce votre estime et votre mental.</p>
                </div>
              </div>
              <div className="flex items-start space-x-4">
-               <Dumbbell size={30} className="text-afonte-red flex-shrink-0 mt-1" />
+               <Dumbbell size={30} className="text-sbf-red flex-shrink-0 mt-1" />
                <div>
                  <p className="font-bold text-gray-800">Des résultats concrets et durables</p>
                  <p className="text-gray-600 text-sm">Suivez un plan structuré pour atteindre vos objectifs physiques efficacement.</p>
@@ -173,7 +173,7 @@ const Index: React.FC = () => {
             <AccordionItem value="item-1">
               <AccordionTrigger className="text-lg font-semibold text-gray-800">Comment fonctionne le générateur de programme ?</AccordionTrigger>
               <AccordionContent className="text-gray-700">
-                Notre générateur de programme utilise un algorithme avancé qui prend en compte vos objectifs, votre niveau d'expérience, le matériel disponible et le nombre de jours d'entraînement pour créer un plan sur mesure. <Link to="/programme" className="text-afonte-red hover:underline font-semibold">Essayez-le gratuitement ici !</Link>
+                Notre générateur de programme utilise un algorithme avancé qui prend en compte vos objectifs, votre niveau d'expérience, le matériel disponible et le nombre de jours d'entraînement pour créer un plan sur mesure. <Link to="/programme" className="text-sbf-red hover:underline font-semibold">Essayez-le gratuitement ici !</Link>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
@@ -191,7 +191,7 @@ const Index: React.FC = () => {
             <AccordionItem value="item-4">
               <AccordionTrigger className="text-lg font-semibold text-gray-800">Y a-t-il un essai gratuit ?</AccordionTrigger>
               <AccordionContent className="text-gray-700">
-                Oui, nous offrons un essai gratuit de 14 jours pour notre abonnement Premium. Vous pouvez générer votre programme et commencer à l'utiliser sans engagement. <Link to="/tarifs" className="text-afonte-red hover:underline font-semibold">Découvrez nos tarifs et l'essai gratuit ici.</Link>
+                Oui, nous offrons un essai gratuit de 14 jours pour notre abonnement Premium. Vous pouvez générer votre programme et commencer à l'utiliser sans engagement. <Link to="/tarifs" className="text-sbf-red hover:underline font-semibold">Découvrez nos tarifs et l'essai gratuit ici.</Link>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-5">

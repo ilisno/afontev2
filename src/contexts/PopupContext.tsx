@@ -12,6 +12,7 @@ interface PopupContent {
   secondaryButtonAction?: () => void | string; // Secondary action can be a function or a link path
   id: string; // Unique ID for this specific popup instance/type
   onCloseCallback?: () => void; // Callback to run when the popup is closed
+  showPreviewTable?: boolean; // New property to indicate showing the preview table
 }
 
 interface PopupContextType {
@@ -82,6 +83,7 @@ const popupContents: Omit<PopupContent, 'onCloseCallback'>[] = [ // Omit callbac
     primaryButtonAction: "/programme", // This is a link path to the program generator page
     secondaryButtonText: "Fermer",
     secondaryButtonAction: () => {}, // Action to just close the popup
+    showPreviewTable: true, // Add flag to show the preview table
   },
 ];
 
@@ -171,6 +173,7 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           primaryButtonAction={popupState.content.primaryButtonAction} // Pass the action directly (can be string or function)
           secondaryButtonText={popupState.content.secondaryButtonText}
           secondaryButtonAction={popupState.content.secondaryButtonAction} // Pass the action directly (can be string or function)
+          showPreviewTable={popupState.content.showPreviewTable} // Pass the new property
         />
       )}
     </PopupContext.Provider>

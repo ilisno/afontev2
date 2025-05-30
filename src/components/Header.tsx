@@ -53,10 +53,9 @@ const Header: React.FC = () => {
   return (
     <header className="bg-white text-gray-800 p-4 shadow-md border-b border-gray-200">
       <div className="container mx-auto flex justify-between items-center">
-        {/* Logo with Image and Text */}
+        {/* Logo with Image */}
         <Link to="/" className="flex items-center z-20" onClick={closeMenu}>
-          <img src="/logo.png" alt="AFonte coaching logo" className="h-10 w-auto" />
-          <span className="ml-2 text-xl font-bold text-gray-800">AFonte</span>
+          <img src="/logo.png" alt="SBF coaching logo" className="h-10 w-auto" />
         </Link>
 
         {/* Mobile Menu Button */}

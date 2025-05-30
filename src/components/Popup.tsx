@@ -70,12 +70,12 @@ const Popup: React.FC<PopupProps> = ({
         <DialogFooter className="flex flex-col sm:flex-row sm:justify-center gap-3 mt-4">
           {typeof primaryButtonAction === 'string' ? (
              <Button asChild>
-               <Link to={primaryButtonAction} onClick={handlePrimaryAction} className="bg-afonte-red text-white hover:bg-red-700 text-base px-6 py-3 rounded-md font-semibold">
+               <Link to={primaryButtonAction} onClick={handlePrimaryAction} className="bg-sbf-red text-white hover:bg-red-700 text-base px-6 py-3 rounded-md font-semibold">
                  {primaryButtonText}
                </Link>
              </Button>
           ) : (
-            <Button onClick={handlePrimaryAction} className="bg-afonte-red text-white hover:bg-red-700 text-base px-6 py-3 rounded-md font-semibold">
+            <Button onClick={handlePrimaryAction} className="bg-sbf-red text-white hover:bg-red-700 text-base px-6 py-3 rounded-md font-semibold">
               {primaryButtonText}
             </Button>
           )}

@@ -24,7 +24,7 @@ type BlogPost = {
 const Blog: React.FC = () => {
   // State to hold blog posts
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = true;
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const { showRandomPopup } = usePopup(); // Use the showRandomPopup hook
@@ -149,7 +149,7 @@ const Blog: React.FC = () => {
                    {post.excerpt && <p className="text-gray-700 text-left mb-4">{post.excerpt}</p>} {/* Display excerpt if available */}
                    {/* Keep the "Lire la suite" link as well */}
                    {post.slug?.current && post.category?.slug?.current && (
-                     <Link to={`/${post.category.slug.current}/${post.slug.current}`} className="text-afonte-red hover:underline font-semibold flex items-center justify-start"> {/* Adjusted link color and alignment */}
+                     <Link to={`/${post.category.slug.current}/${post.slug.current}`} className="text-sbf-red hover:underline font-semibold flex items-center justify-start"> {/* Adjusted link color and alignment */}
                        Lire la suite →
                      </Link>
                    )}

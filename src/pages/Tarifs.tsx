@@ -27,7 +27,7 @@ const Tarifs: React.FC = () => {
             {/* Use the new component */}
             <StripePricingTable
               pricingTableId={stripePricingTableId}
-              publishableKey={publishableKey}
+              publishableKey={stripePublishableKey}
             />
 
             {/* Detailed Plan Descriptions */}
@@ -40,23 +40,23 @@ const Tarifs: React.FC = () => {
                 <CardContent className="p-0">
                   <ul className="space-y-3 text-gray-700">
                     <li className="flex items-start space-x-2">
-                      <Dumbbell size={20} className="text-afonte-red flex-shrink-0 mt-1" /> {/* Changed icon */}
+                      <Dumbbell size={20} className="text-sbf-red flex-shrink-0 mt-1" /> {/* Changed icon */}
                       <span>Génération de programmes de musculation personnalisés illimitée.</span>
                     </li>
                      <li className="flex items-start space-x-2">
-                      <CheckCircle size={20} className="text-afonte-red flex-shrink-0 mt-1" />
+                      <CheckCircle size={20} className="text-sbf-red flex-shrink-0 mt-1" />
                       <span>Suivi de vos programmes et de votre progression semaine après semaine.</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <MessageSquare size={20} className="text-afonte-red flex-shrink-0 mt-1" /> {/* Changed icon */}
+                      <MessageSquare size={20} className="text-sbf-red flex-shrink-0 mt-1" /> {/* Changed icon */}
                       <span>Accès illimité au Coach Virtuel pour répondre à toutes vos questions avancées sur la musculation et la nutrition.</span>
                     </li>
                      <li className="flex items-start space-x-2">
-                      <Scale size={20} className="text-afonte-red flex-shrink-0 mt-1" /> {/* Changed icon */}
+                      <Scale size={20} className="text-sbf-red flex-shrink-0 mt-1" /> {/* Changed icon */}
                       <span>Suivi détaillé de vos performances (poids, répétitions) et de votre poids corporel.</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <Book size={20} className="text-afonte-red flex-shrink-0 mt-1" />
+                      <Book size={20} className="text-sbf-red flex-shrink-0 mt-1" />
                       <span>Guide ultime gratuit sur la musculation et la nutrition (valeur 19€).</span>
                     </li>
                   </ul>
@@ -71,15 +71,15 @@ const Tarifs: React.FC = () => {
                 <CardContent className="p-0">
                   <ul className="space-y-3 text-gray-700">
                     <li className="flex items-start space-x-2">
-                      <UserCheck size={20} className="text-afonte-red flex-shrink-0 mt-1" />
+                      <UserCheck size={20} className="text-sbf-red flex-shrink-0 mt-1" />
                       <span>Coaching 100% personnalisé.</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <Phone size={20} className="text-afonte-red flex-shrink-0 mt-1" />
+                      <Phone size={20} className="text-sbf-red flex-shrink-0 mt-1" />
                       <span>Appel hebdomadaire de 45min avec un coach expérimenté.</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <Apple size={20} className="text-afonte-red flex-shrink-0 mt-1" />
+                      <Apple size={20} className="text-sbf-red flex-shrink-0 mt-1" />
                       <span>Suivi nutritionnel personnalisé.</span>
                     </li>
                      {/* Added a note about Premium features being included */}

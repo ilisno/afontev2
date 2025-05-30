@@ -203,7 +203,7 @@ const CoachVirtuel: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full bg-afonte-red text-white hover:bg-red-700">
+                  <Button type="submit" className="w-full bg-sbf-red text-white hover:bg-red-700">
                     Commencer la conversation
                   </Button>
                 </form>
@@ -232,7 +232,7 @@ const CoachVirtuel: React.FC = () => {
                   <div
                     className={`max-w-[70%] p-3 rounded-lg ${
                       msg.role === 'user'
-                        ? 'bg-afonte-red text-white'
+                        ? 'bg-sbf-red text-white'
                         : 'bg-gray-200 text-gray-800'
                     }`}
                   >
