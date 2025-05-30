@@ -218,18 +218,16 @@ const ProgrammeGenerator: React.FC = () => {
   // Function to handle the actual program generation and Supabase insertion
   async function generateAndSaveProgram(values: z.infer<typeof formSchema>) {
      setIsSubmitting(true);
-     console.log("[generateAndSaveProgram] Starting program generation and saving for values:", values);
+     console.log("Generating and saving program for values:", values);
 
      try {
        // --- Call the client-side generator ---
-       console.log("[generateAndSaveProgram] Calling generateProgramClientSide...");
        const program = generateProgramClientSide(values as ProgramFormData);
        setGeneratedProgram(program);
-       console.log("[generateAndSaveProgram] Program generated:", program);
+       console.log("Program generated:", program);
 
        // --- Insert form data into program_logs table (always log generation attempt) ---
        // This insertion will now trigger the SQL FUNCTION to add email to email_subscribers
-       console.log("[generateAndSaveProgram] Inserting data into program_logs...");
        const { data: logData, error: logError } = await supabase
          .from('program_logs') // *** Changed table name ***
          .insert([
@@ -243,16 +241,16 @@ const ProgrammeGenerator: React.FC = () => {
          ]);
 
        if (logError) {
-         console.error("[generateAndSaveProgram] Error inserting data into program_logs:", logError);
+         console.error("Error inserting data into program_logs:", logError);
          // Don't necessarily show an error toast for this background log
        } else {
-         console.log("[generateAndSaveProgram] Program log data inserted successfully:", logData);
+         console.log("Program log data inserted successfully:", logData);
        }
 
        // --- Insert full program into training_programs table IF user is logged in ---
        let trainingProgramId = null;
        if (session?.user?.id) {
-           console.log("[generateAndSaveProgram] User is logged in, saving full program to training_programs...");
+           console.log("User is logged in, saving full program to training_programs...");
            const { data: trainingProgramData, error: trainingProgramError } = await supabase
                .from('training_programs')
                .insert([
@@ -268,14 +266,14 @@ const ProgrammeGenerator: React.FC = () => {
                .single(); // Expect a single row
 
            if (trainingProgramError) {
-               console.error("[generateAndSaveProgram] Error inserting data into training_programs:", trainingProgramError);
+               console.error("Error inserting data into training_programs:", trainingProgramError);
                showError("Une erreur est survenue lors de l'enregistrement de votre programme.");
            } else if (trainingProgramData) {
-               console.log("[generateAndSaveProgram] Training program saved successfully:", trainingProgramData);
+               console.log("Training program saved successfully:", trainingProgramData);
                trainingProgramId = trainingProgramData.id;
                showSuccess("Votre programme a été généré et enregistré dans votre espace !");
            } else {
-               console.error("[generateAndSaveProgram] Training program insert returned no data.");
+               console.error("Training program insert returned no data.");
                showError("Une erreur est survenue lors de l'enregistrement de votre programme.");
            }
        } else {
@@ -284,11 +282,10 @@ const ProgrammeGenerator: React.FC = () => {
        }
 
 
-     } catch (error: any) { // Catch any unexpected errors
-       console.error("[generateAndSaveProgram] An unexpected error occurred during generation or saving:", error);
-       showError(`Une erreur inattendue est survenue: ${error.message || error}`);
+     } catch (error) {
+       console.error("An unexpected error occurred during generation or saving:", error);
+       showError("Une erreur inattendue est survenue.");
      } finally {
-       console.log("[generateAndSaveProgram] Finishing program generation and saving process.");
        setIsSubmitting(false);
      }
   }
@@ -301,14 +298,13 @@ const ProgrammeGenerator: React.FC = () => {
     // Check for free program generation limit if user is NOT logged in
     if (!session) {
         if (values.email) { // Only apply limit if an email is provided for tracking
-            console.log("[onSubmit] User not logged in. Checking for existing free programs for email:", values.email);
             const { data: existingLogs, error: logCheckError } = await supabase
                 .from('program_logs')
                 .select('id')
                 .eq('user_email', values.email);
 
             if (logCheckError) {
-                console.error("[onSubmit] Error checking existing program logs:", logCheckError);
+                console.error("Error checking existing program logs:", logCheckError);
                 showError("Une erreur est survenue lors de la vérification de vos programmes.");
                 setIsSubmitting(false);
                 return;
@@ -316,7 +312,7 @@ const ProgrammeGenerator: React.FC = () => {
 
             if (existingLogs && existingLogs.length > 0) {
                 // User has already generated a program with this email
-                console.log("[onSubmit] User has already generated a free program with this email. Redirecting to upgrade page.");
+                console.log("User has already generated a free program with this email. Redirecting to upgrade page.");
                 showError("Vous avez déjà généré un programme gratuit avec cet email.");
                 setIsSubmitting(false);
                 navigate('/upgrade-to-premium'); // Redirect to the new upgrade page
@@ -327,12 +323,12 @@ const ProgrammeGenerator: React.FC = () => {
 
     // If we reach here, either user is logged in, or not logged in but no previous program found for the email.
     // Proceed with showing popup and then generating/saving.
-    console.log("[onSubmit] Proceeding with form submission. Showing random popup...");
+    console.log("Form submitted, showing random popup...");
     setFormData(values); // Store form data temporarily
 
     // Define a callback function that calls generateAndSaveProgram after the popup is closed
     const handlePopupCloseAndGenerate = () => {
-        console.log("[onSubmit] Popup closed, proceeding with program generation...");
+        console.log("Popup closed, proceeding with program generation...");
         if (formData) { // Use the stored formData
             generateAndSaveProgram(formData);
             setFormData(null); // Clear stored data after use
