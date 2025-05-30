@@ -27,7 +27,7 @@ const Tarifs: React.FC = () => {
             {/* Use the new component */}
             <StripePricingTable
               pricingTableId={stripePricingTableId}
-              publishableKey={publishableKey}
+              publishableKey={stripePublishableKey}
             />
 
             {/* Detailed Plan Descriptions */}
