@@ -62,9 +62,9 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Custom colors for smoothiebananefraise inspiration
-        'sbf-red': '#E53935', // A shade of red
-        'sbf-yellow': '#FFEB3B', // A shade of yellow
+        // Custom colors for AFonte inspiration
+        'afonte-red': '#E53935', // A shade of red
+        'afonte-yellow': '#FFEB3B', // A shade of yellow
       },
       borderRadius: {
         lg: "var(--radius)",

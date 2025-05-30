@@ -5,7 +5,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  // Removed: Tooltip,
   ResponsiveContainer,
 } from 'recharts';
 import { cn } from '@/lib/utils'; // Assuming cn utility is available
@@ -90,17 +90,16 @@ const StrengthProgressChart: React.FC = () => {
                tickLine={false} // Hide Y axis tick lines
                axisLine={false} // Hide Y axis line
             />
-            <Tooltip />
-            {/* Animated Line */}
+            {/* Removed Tooltip component */}
             <Line
               type="monotone"
               dataKey="perfs" // Use the new data key
-              stroke="hsl(var(--sbf-red))" // Use your custom red color
+              stroke="hsl(var(--afonte-red))" // Use your custom red color
               strokeWidth={3} // Thicker line
               dot={false} // Hide dots for a smoother curve
-              // dot={{ stroke: 'hsl(var(--sbf-red))', strokeWidth: 2, r: 4 }} // Styled dots
+              // dot={{ stroke: 'hsl(var(--afonte-red))', strokeWidth: 2, r: 4 }} // Styled dots
               // activeDot={{ r: 6 }} // Larger dot on hover
-              animationDuration={1500} // Animation duration
+              animationDuration={3000} // Animation duration increased to 3 seconds
               animationEasing="ease-out" // Animation easing
             />
           </LineChart>

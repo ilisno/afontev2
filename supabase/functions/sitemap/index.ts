@@ -21,7 +21,7 @@ serve(async (req) => {
 
   try {
     // Using your custom domain as the base URL for the sitemap
-    const BASE_URL = 'https://smoothiebananefraise.fr'; 
+    const BASE_URL = 'https://afonte.fr'; 
 
     // Fetch blog posts from Sanity
     const posts = await sanityClient.fetch(`*[_type == "post"]{

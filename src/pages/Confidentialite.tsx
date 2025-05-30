@@ -34,7 +34,7 @@ const Confidentialite: React.FC = () => {
               <p>Nous ne partageons pas vos données personnelles avec des tiers, sauf si cela est nécessaire pour la fourniture de nos services (ex: hébergeur, service de paiement sécurisé) ou si la loi l'exige.</p>
 
               <h2 className="text-xl font-bold mt-6 mb-2">Vos droits</h2>
-              <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification, de suppression, de limitation du traitement, d'opposition et de portabilité de vos données personnelles. Pour exercer ces droits, veuillez nous contacter à equipe@smoothiebananefraise.fr.</p>
+              <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification, de suppression, de limitation du traitement, d'opposition et de portabilité de vos données personnelles. Pour exercer ces droits, veuillez nous contacter à equipe@afonte.fr.</p>
             </div>
           </CardContent>
         </Card>

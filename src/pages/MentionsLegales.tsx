@@ -12,7 +12,7 @@ const MentionsLegales: React.FC = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-gray-800">Mentions Légales</CardTitle>
             <CardDescriptionShadcn className="text-gray-600">
-              Informations légales concernant le site SmoothieBananeFraise.
+              Informations légales concernant le site AFonte.
             </CardDescriptionShadcn>
           </CardHeader>
           <CardContent className="p-6">
@@ -21,7 +21,7 @@ const MentionsLegales: React.FC = () => {
               <p><strong>Nom :</strong> Iliane Snoussi</p>
               <p><strong>Statut :</strong> Micro-entrepreneur</p>
               <p><strong>Adresse :</strong> Rue d'Yerres 91230 Montgeron</p>
-              <p><strong>Email :</strong> equipe@smoothiebananefraise.fr</p>
+              <p><strong>Email :</strong> equipe@afonte.fr</p>
               <p><strong>Téléphone :</strong> [à compléter]</p>
               <p><strong>SIRET :</strong> [à compléter une fois la micro-entreprise créée]</p>
               <p><strong>TVA intracommunautaire :</strong> non applicable, article 293 B du CGI</p>
@@ -33,10 +33,10 @@ const MentionsLegales: React.FC = () => {
               <p><strong>Nom de l’hébergeur :</strong> Vercel Inc.</p>
               <p><strong>Raison sociale :</strong> Vercel Inc.</p>
               <p><strong>Adresse :</strong> 340 S Lemon Ave #4133, Walnut, CA 91789, USA</p>
-              <p><strong>Site :</strong> <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-sbf-red hover:underline">https://vercel.com</a></p>
+              <p><strong>Site :</strong> <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-afonte-red hover:underline">https://vercel.com</a></p>
 
               <h2 className="text-xl font-bold mt-6 mb-2">Propriété intellectuelle</h2>
-              <p>Tous les éléments du site smoothiebananefraise.fr (textes, images, vidéos, logo, etc.) sont la propriété exclusive d’Iliane Snoussi, sauf mention contraire.</p>
+              <p>Tous les éléments du site afonte.fr (textes, images, vidéos, logo, etc.) sont la propriété exclusive d’Iliane Snoussi, sauf mention contraire.</p>
               <p>Toute reproduction, représentation, modification, publication, adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable.</p>
 
               <h2 className="text-xl font-bold mt-6 mb-2">Utilisation de contenus tiers</h2>
