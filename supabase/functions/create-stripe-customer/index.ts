@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@16.0.0?target=deno"; // Using a recent Stripe version for Deno
+import Stripe from "https://esm.sh/stripe@16.1.0?target=deno"; // Updated Stripe version to 16.1.0
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'; // Supabase client for Edge Functions
 
 const corsHeaders = {
@@ -38,17 +38,31 @@ serve(async (req) => {
 
     let customerId;
 
-    // Attempt to find an existing Stripe customer by email
-    const existingCustomers = await stripe.customers.list({
-      email: email,
-      limit: 1,
+    // --- START: Manual check for existing Stripe customer by email ---
+    // This bypasses the Stripe SDK's `customers.list` method which was causing issues with Deno's fetch.
+    const listCustomersUrl = `https://api.stripe.com/v1/customers?email=${encodeURIComponent(email)}&limit=1`;
+    const listResponse = await fetch(listCustomersUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${stripeSecretKey}`,
+        // 'Content-Type': 'application/x-www-form-urlencoded', // Not strictly necessary for GET with query params
+      },
     });
 
-    if (existingCustomers.data.length > 0) {
-      customerId = existingCustomers.data[0].id;
-      console.log(`Existing Stripe customer found for ${email}: ${customerId}`);
+    if (!listResponse.ok) {
+      const errorData = await listResponse.json();
+      console.error("Manual Stripe customer list error:", errorData);
+      throw new Error(`Failed to list existing Stripe customer: ${errorData.message || listResponse.statusText}`);
+    }
+    const listData = await listResponse.json();
+
+    if (listData.data.length > 0) {
+      customerId = listData.data[0].id;
+      console.log(`Existing Stripe customer found (manual list) for ${email}: ${customerId}`);
     } else {
-      // If no existing customer, create a new one
+      // --- END: Manual check ---
+
+      // If no existing customer, create a new one using the Stripe SDK
       const customer = await stripe.customers.create({
         email: email,
         metadata: {
@@ -60,7 +74,6 @@ serve(async (req) => {
     }
 
     // Update the user's profile in Supabase with the Stripe customer ID
-    // Use the service role key for server-side database updates
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
