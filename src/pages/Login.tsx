@@ -1,9 +1,9 @@
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-// Removed: import fr from '@supabase/auth-ui-shared/dist/esm/locales/fr';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { showSuccess, showError } from '@/utils/toast'; // Import toast utilities
 
 // Manually defined French translations
 const frenchTranslations = {
@@ -78,10 +78,58 @@ function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // If a session exists (user is logged in), redirect to the Mon Espace page
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      // If a session exists (user is logged in), proceed with logic
       if (session) {
-        navigate('/mon-espace'); // Changed redirection path
+        console.log("Auth state changed: User signed in or updated.", _event, session);
+
+        // Check if the user's profile already has a Stripe customer ID
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('stripe_customer_id')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching user profile:", profileError);
+          showError("Erreur lors de la récupération de votre profil.");
+          // Still navigate, but with a warning
+          navigate('/mon-espace');
+          return;
+        }
+
+        // If no Stripe customer ID exists for this user, create one
+        if (!profile?.stripe_customer_id) {
+          console.log("No Stripe customer ID found for user, attempting to create one...");
+          try {
+            const { data, error: invokeError } = await supabase.functions.invoke('create-stripe-customer', {
+              body: {
+                userId: session.user.id,
+                email: session.user.email,
+              },
+            });
+
+            if (invokeError) {
+              console.error("Error invoking create-stripe-customer Edge Function:", invokeError);
+              showError("Erreur lors de la création de votre compte Stripe.");
+            } else if (data && data.customerId) {
+              console.log("Stripe customer created successfully:", data.customerId);
+              showSuccess("Votre compte Stripe a été créé !");
+              // The Edge Function itself updates the profile, so no need to do it here again.
+            } else {
+              console.error("create-stripe-customer Edge Function returned unexpected data:", data);
+              showError("Réponse inattendue de l'API Stripe.");
+            }
+          } catch (err) {
+            console.error("Unexpected error calling create-stripe-customer:", err);
+            showError("Une erreur inattendue est survenue lors de la création du compte Stripe.");
+          }
+        } else {
+          console.log("Stripe customer ID already exists for user:", profile.stripe_customer_id);
+        }
+
+        // Always redirect to Mon Espace after login/signup and Stripe customer check
+        navigate('/mon-espace');
       }
     });
 
