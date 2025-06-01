@@ -4,14 +4,10 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription as CardDescriptionShadcn } from "@/components/ui/card";
 import StripePricingTable from '@/components/StripePricingTable'; // Import the new component
 import { CheckCircle, Book, UserCheck, Phone, Apple, MessageSquare, Dumbbell, Scale } from 'lucide-react'; // Import additional icons
-import { useSession } from '@supabase/auth-helpers-react'; // Import useSession
 
 const Tarifs: React.FC = () => {
   const stripePricingTableId = "prctbl_1RSM4NFv5sEu2MuC6Ai0EYZG";
   const stripePublishableKey = "pk_live_51QICP2Fv5sEu2MuCHbDC5YqK9p95UIFyb2Q7LgGBeMAJ00XhFLjsEznrzslx0BALa8Bggu3Uo5j3BY3ohCkBEwWy004w6ontFa";
-
-  const session = useSession(); // Get the user session
-  const customerEmail = session?.user?.email; // Get the email if the user is logged in
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -32,7 +28,6 @@ const Tarifs: React.FC = () => {
             <StripePricingTable
               pricingTableId={stripePricingTableId}
               publishableKey={stripePublishableKey}
-              customerEmail={customerEmail} {/* Pass the customer's email here */}
             />
 
             {/* Detailed Plan Descriptions */}
