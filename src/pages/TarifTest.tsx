@@ -189,7 +189,7 @@ const TarifsTest: React.FC = () => {
                   Annuel
                 </ToggleGroupItem>
                 <ToggleGroupItem value="one-time" disabled className="px-4 py-2 rounded-md text-gray-500 cursor-not-allowed">
-                  Ponctuel (bientôt)
+                  À vie (bientôt)
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -197,7 +197,7 @@ const TarifsTest: React.FC = () => {
             {/* Pricing Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {plans.map((plan) => (
-                <Card key={plan.id} className="bg-white shadow-md p-6 flex flex-col">
+                <Card key={plan.id} className="bg-white shadow-md p-6 flex flex-col relative"> {/* Added relative here */}
                   {plan.isBestOffer && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-afonte-yellow text-afonte-red text-xs font-bold px-3 py-1 rounded-full shadow-md">
                       Meilleure offre
