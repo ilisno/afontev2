@@ -11,8 +11,8 @@ import BlogPostDetail from "./pages/BlogPostDetail";
 import CoachVirtuel from "./pages/CoachVirtuel";
 import MonEspace from "./pages/MonEspace";
 import Login from "./pages/Login";
-import Tarifs from "./pages/Tarifs";
-import TarifsTest from "./pages/TarifTest"; {/* Corrected Import: TarifsTest */}
+import Tarifs from "./pages/Tarifs"; // Now points to the content that was in TarifTest.tsx
+import TarifsTest from "./pages/TarifTest"; // Now points to the content that was in Tarifs.tsx
 import Merci1 from "./pages/Merci1";
 import Merci2 from "./pages/Merci2";
 import MentionsLegales from "./pages/MentionsLegales";
@@ -43,8 +43,8 @@ const App = () => (
               <Route path="/coach-virtuel" element={<CoachVirtuel />} />
               <Route path="/mon-espace" element={<MonEspace />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/tarifs" element={<Tarifs />} />
-              <Route path="/tariftest" element={<TarifsTest />} /> {/* Route remains the same */}
+              <Route path="/tarifs" element={<Tarifs />} /> {/* This route now uses the content from the original TarifTest.tsx */}
+              <Route path="/tariftest" element={<TarifsTest />} /> {/* This route now uses the content from the original Tarifs.tsx */}
               <Route path="/merci1" element={<Merci1 />} />
               <Route path="/merci2" element={<Merci2 />} />
               <Route path="/mentions-legales" element={<MentionsLegales />} />
