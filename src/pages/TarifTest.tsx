@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription as CardDescriptionShadcn } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } => "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CheckCircle, Book, UserCheck, Phone, Apple, MessageSquare, Dumbbell, Scale } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -188,8 +188,8 @@ const TarifsTest: React.FC = () => {
                 <ToggleGroupItem value="annual" className="px-4 py-2 rounded-md data-[state=on]:bg-afonte-red data-[state=on]:text-white">
                   Annuel
                 </ToggleGroupItem>
-                <ToggleGroupItem value="one-time" disabled className="px-4 py-2 rounded-md text-gray-500 cursor-not-allowed">
-                  À vie (bientôt)
+                <ToggleGroupItem value="one-time" className="px-4 py-2 rounded-md"> {/* Removed disabled and text-gray-500 cursor-not-allowed */}
+                  À vie
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
