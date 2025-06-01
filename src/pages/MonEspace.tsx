@@ -81,25 +81,6 @@ const MonEspace: React.FC = () => {
   const [currentWorkoutData, setCurrentWorkoutData] = useState<DayWorkoutData>({});
   const [isSavingWorkout, setIsSavingWorkout] = useState(false);
 
-  // Initialize the email form (only used when not logged in)
-  const emailForm = useForm<EmailFormValues>({
-    resolver: zodResolver(emailSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
-
-  // Handle email form submission (only used when not logged in)
-  const onEmailSubmit = async (values: EmailFormValues) => {
-    // This function is not actually used to log the user in,
-    // it's just part of the placeholder login prompt.
-    // The actual login is handled by the /login page.
-    console.log("Email submitted in placeholder form:", values.email);
-    // In a real scenario, you might trigger a login flow here.
-    // For now, we'll just log it and maybe show a message.
-    showSuccess("Merci ! Veuillez vous connecter via la page dédiée.");
-  };
-
 
   // Fetch programs and subscription status when session changes or component mounts
   useEffect(() => {
@@ -429,38 +410,9 @@ const MonEspace: React.FC = () => {
               </CardDescriptionShadcn>
             </CardHeader>
             <CardContent>
-               {/* Use the email form here */}
-               <Form {...emailForm}>
-                 <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
-                   <FormField
-                     control={emailForm.control}
-                     name="email"
-                     render={({ field }) => (
-                       <FormItem>
-                         <FormLabel>Email</FormLabel>
-                         <FormControl>
-                           <Input type="email" placeholder="vous@email.com" {...field} />
-                         </FormControl>
-                         <FormDescription className="text-gray-600">
-                            Entrez votre email pour vous connecter ou créer un compte.
-                         </FormDescription>
-                         <FormMessage />
-                       </FormItem>
-                     )}
-                   />
-                   {/* This button doesn't actually log in, it's just part of the prompt */}
-                   {/* The actual login link is below */}
-                   <Button type="submit" className="w-full bg-afonte-red text-white hover:bg-red-700">
-                     Continuer
-                   </Button>
-                 </form>
-               </Form>
-               <div className="mt-4 text-center">
-                  {/* Corrected Button asChild usage - Removed the extra div */}
-                  <Button asChild variant="link" className="text-afonte-red hover:underline">
-                     <Link to="/login">Aller à la page de connexion complète</Link>
-                  </Button>
-               </div>
+               <Button asChild className="w-full bg-afonte-red text-white hover:bg-red-700">
+                  <Link to="/login">Se connecter</Link> {/* Use Link for internal navigation */}
+               </Button>
             </CardContent>
           </Card>
         </main>
@@ -598,7 +550,6 @@ const MonEspace: React.FC = () => {
                                                  {exercise.notes && <span className="text-sm text-gray-500 italic ml-2">({exercise.notes})</span>}
                                               </AccordionTrigger>
                                               <AccordionContent className="p-4 pt-0"> {/* Removed space-y-3 here */}
-                                                 {/* Wrap all content in a single div */}
                                                  <div className="space-y-3"> {/* Moved space-y-3 here */}
                                                     {/* Display muscles worked */}
                                                     {exercise.muscles && exercise.muscles.length > 0 && (

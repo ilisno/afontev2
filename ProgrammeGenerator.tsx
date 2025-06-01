@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,31 +27,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePopup } from '@/contexts/PopupContext';
 import { generateProgramClientSide, Program, ProgramFormData } from '@/utils/programGenerator';
 import { useSession } from '@supabase/auth-helpers-react'; // Import useSession
-
-// Define the schema for form validation
-const formSchema = z.object({
-  objectif: z.enum(["Prise de Masse", "Sèche / Perte de Gras", "Powerlifting", "Powerbuilding"], {
-    required_error: "Veuillez sélectionner un objectif principal.",
-  }),
-  experience: z.enum(["Débutant (< 1 an)", "Intermédiaire (1-3 ans)", "Avancé (3+ ans)"], {
-    required_error: "Veuillez sélectionner votre niveau d'expérience.",
-  }),
-  split: z.enum(["Full Body (Tout le corps)", "Half Body (Haut / Bas)", "Push Pull Legs", "Autre / Pas de préférence"], {
-    required_error: "Veuillez sélectionner un type de split.",
-  }),
-  joursEntrainement: z.coerce.number({
-    required_error: "Veuillez indiquer le nombre de jours d'entraînement.",
-    invalid_type_error: "Veuillez entrer un nombre valide.",
-  }).min(1, { message: "Doit être au moins 1." }).max(7, { message: "Doit être au maximum 7." }),
-  dureeMax: z.coerce.number({
-    required_error: "Veuillez indiquer la durée maximale par séance.",
-    invalid_type_error: "Veuillez entrer un nombre valide.",
-  }).min(15, { message: "Doit être au moins 15 minutes." }).max(180, { message: "Doit être au maximum 180 minutes." }),
-  materiel: z.array(z.string()).optional(),
-  email: z.string().email({
-    message: "Veuillez entrer une adresse email valide.",
-  }).or(z.literal("")), // Allow empty string or a valid email
-});
+import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile
+import { cn } from '@/lib/utils'; // Import cn
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // Import Select components
 
 
 const ProgrammeGenerator: React.FC = () => {
@@ -62,6 +46,81 @@ const ProgrammeGenerator: React.FC = () => {
   const { showRandomPopup } = usePopup();
   const navigate = useNavigate();
   const session = useSession(); // Get the user session
+  const isMobile = useIsMobile(); // Use the hook
+
+  // Define the schema for form validation dynamically based on session
+  const formSchema = React.useMemo(() => z.object({
+    objectif: z.enum(["Prise de Masse", "Sèche / Perte de Gras", "Powerlifting", "Powerbuilding"], {
+      required_error: "Veuillez sélectionner un objectif principal.",
+    }),
+    experience: z.enum(["Débutant (< 1 an)", "Intermédiaire (1-3 ans)", "Avancé (3+ ans)"], {
+      required_error: "Veuillez sélectionner votre niveau d'expérience.",
+    }),
+    joursEntrainement: z.coerce.number({
+      required_error: "Veuillez indiquer le nombre de jours d'entraînement.",
+      invalid_type_error: "Veuillez entrer un nombre valide.",
+    }).min(1, { message: "Doit être au moins 1." }).max(6, { message: "Doit être au maximum 6." }), // Updated max to 6
+    dureeMax: z.coerce.number({
+      required_error: "Veuillez indiquer la durée maximale par séance.",
+      invalid_type_error: "Veuillez entrer un nombre valide.",
+    }).min(30, { message: "Doit être au moins 30 minutes." }).max(105, { message: "Doit être au maximum 105 minutes (1h45)." }), // Updated min to 30 and max to 105
+    materiel: z.array(z.string()).optional(),
+    // New fields for 1RM (optional by default)
+    squat1RM: z.coerce.number().optional().nullable(),
+    bench1RM: z.coerce.number().optional().nullable(),
+    deadlift1RM: z.coerce.number().optional().nullable(),
+    ohp1RM: z.coerce.number().optional().nullable(),
+    // New fields for RM type (e.g., 1 for 1RM, 5 for 5RM)
+    squatRmType: z.coerce.number().optional().nullable(),
+    benchRmType: z.coerce.number().optional().nullable(),
+    deadliftRmType: z.coerce.number().optional().nullable(),
+    ohpRmType: z.coerce.number().optional().nullable(),
+    // New field for priority muscle groups
+    priorityMuscles: z.array(z.string()).optional(),
+    // New field for priority exercises
+    priorityExercises: z.array(z.string()).optional(),
+    // New field for selected main lifts
+    selectedMainLifts: z.array(z.string()).optional(),
+    email: session?.user?.email
+      ? z.string().email({ message: "Veuillez entrer une adresse email valide." })
+      : z.string().email({ message: "Veuillez entrer une adresse email valide." }).min(1, "L'email est requis pour enregistrer votre programme."),
+  }).superRefine((data, ctx) => {
+      // Custom validation: If objective is Powerlifting or Powerbuilding, 1RM fields are required and > 0
+      if (data.objectif === "Powerlifting" || data.objectif === "Powerbuilding") {
+          const mainLiftsToCheck = [
+              { field: "squat1RM", rmTypeField: "squatRmType", name: "Squat barre", label: "Squat" },
+              { field: "bench1RM", rmTypeField: "benchRmType", name: "Développé couché", label: "Développé Couché" },
+              { field: "deadlift1RM", rmTypeField: "deadliftRmType", name: "Soulevé de terre", label: "Soulevé de Terre" },
+              { field: "ohp1RM", rmTypeField: "ohpRmType", name: "Développé militaire barre", label: "Overhead Press" },
+          ];
+
+          // If specific lifts are selected, their corresponding 1RMs are required.
+          if (data.selectedMainLifts && data.selectedMainLifts.length > 0) {
+              mainLiftsToCheck.forEach(liftInfo => {
+                  if (data.selectedMainLifts?.includes(liftInfo.name)) {
+                      const rmField = liftInfo.field as keyof typeof data;
+                      const rmTypeField = liftInfo.rmTypeField as keyof typeof data;
+
+                      if (!data[rmField] || (data[rmField] as number) <= 0) {
+                          ctx.addIssue({
+                              code: z.ZodIssueCode.custom,
+                              message: `Veuillez entrer le poids pour votre ${liftInfo.label} (doit être > 0).`,
+                              path: [rmField],
+                          });
+                      }
+                      if (!data[rmTypeField] || (data[rmTypeField] as number) <= 0) {
+                          ctx.addIssue({
+                              code: z.ZodIssueCode.custom,
+                              message: `Veuillez sélectionner le type de RM pour votre ${liftInfo.label}.`,
+                              path: [rmTypeField],
+                          });
+                      }
+                  }
+              });
+          }
+      }
+  }), [session]); // Re-memoize if session changes
+
 
   // Initialize the form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -69,13 +128,30 @@ const ProgrammeGenerator: React.FC = () => {
     defaultValues: {
       objectif: undefined,
       experience: undefined,
-      split: undefined,
+      // Removed 'split' from defaultValues
       joursEntrainement: 3,
       dureeMax: 60,
       materiel: [],
       email: session?.user?.email || "", // Pre-fill email if logged in
+      squat1RM: null, // Initialize new fields
+      bench1RM: null,
+      deadlift1RM: null,
+      ohp1RM: null,
+      squatRmType: 1, // Default to 1RM
+      benchRmType: 1,
+      deadliftRmType: 1,
+      ohpRmType: 1,
+      priorityMuscles: [], // Initialize new field
+      priorityExercises: [], // Initialize new field
+      selectedMainLifts: [], // Initialize new field
     },
   });
+
+  // Watch the 'objectif' field to conditionally show 1RM inputs
+  const selectedObjectif = form.watch("objectif");
+  const show1RMInputsSection = selectedObjectif === "Powerlifting" || selectedObjectif === "Powerbuilding";
+  const selectedMainLifts = form.watch("selectedMainLifts") || []; // Watch selected main lifts
+
 
   // Update default email value if session changes after initial render
   React.useEffect(() => {
@@ -94,6 +170,54 @@ const ProgrammeGenerator: React.FC = () => {
     { id: "poids-corps", label: "Poids du Corps (dips tractions)" },
   ];
 
+  // Define muscle group options for priority selection (Removed Lombaires)
+  const muscleGroupOptions = [
+      { id: "Jambes", label: "Jambes" },
+      { id: "Pectoraux", label: "Pectoraux" },
+      { id: "Dos", label: "Dos" },
+      { id: "Épaules", label: "Épaules" },
+      { id: "Biceps", label: "Biceps" },
+      { id: "Triceps", label: "Triceps" },
+      { id: "Abdos", label: "Abdos" },
+      { id: "Mollets", label: "Mollets" },
+      { id: "Avant-bras", label: "Avant-bras" },
+      // Removed Lombaires
+  ];
+
+  // Define priority exercise options
+  const priorityExerciseOptions = [
+      { id: "Squat barre", label: "Squat barre" },
+      { id: "Développé couché", label: "Développé couché" },
+      { id: "Soulevé de terre", label: "Soulevé de terre" },
+      { id: "Développé militaire barre", label: "Développé militaire barre" },
+      { id: "Tractions", label: "Tractions" },
+      { id: "Dips", label: "Dips" },
+  ];
+
+  // Options for Jours d'entraînement
+  const joursEntrainementOptions = Array.from({ length: 6 }, (_, i) => i + 1); // 1 to 6 days
+
+  // Options for Durée max par séance
+  const dureeMaxOptions = [30, 45, 60, 75, 90, 105]; // 30 min to 1h45 min (105 min)
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes === 0 ? `${hours}h` : `${hours}h${remainingMinutes.toString().padStart(2, '0')} min`;
+  };
+
+  // Options for main lifts selection
+  const mainLiftsOptions = [
+    { id: "Squat barre", label: "Squat barre" },
+    { id: "Développé couché", label: "Développé couché" },
+    { id: "Soulevé de terre", label: "Soulevé de terre" },
+    { id: "Développé militaire barre", label: "Développé militaire barre" },
+  ];
+
+  // Options for RM type (1RM to 10RM)
+  const rmTypeOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+
+
   // Function to handle the actual program generation and Supabase insertion
   async function generateAndSaveProgram(values: z.infer<typeof formSchema>) {
      setIsSubmitting(true);
@@ -105,9 +229,10 @@ const ProgrammeGenerator: React.FC = () => {
        setGeneratedProgram(program);
        console.log("Program generated:", program);
 
-       // --- Insert form data into program_generation_logs table (always log generation attempt) ---
+       // --- Insert form data into program_logs table (always log generation attempt) ---
+       // This insertion will now trigger the SQL FUNCTION to add email to email_subscribers
        const { data: logData, error: logError } = await supabase
-         .from('program_generation_logs')
+         .from('program_logs') // *** Changed table name ***
          .insert([
            {
              form_data: values,
@@ -119,7 +244,7 @@ const ProgrammeGenerator: React.FC = () => {
          ]);
 
        if (logError) {
-         console.error("Error inserting data into program_generation_logs:", logError);
+         console.error("Error inserting data into program_logs:", logError);
          // Don't necessarily show an error toast for this background log
        } else {
          console.log("Program log data inserted successfully:", logData);
@@ -192,10 +317,27 @@ const ProgrammeGenerator: React.FC = () => {
 
   // Render the program if generated, otherwise render the form
   if (generatedProgram) {
+    // Check if user is NOT logged in
+    const isNotLoggedIn = !session;
+
     return (
       <div className="flex flex-col min-h-screen bg-gray-100">
         <Header />
-        <main className="flex-grow container mx-auto px-4 py-12 flex justify-center">
+        <main className="flex-grow container mx-auto px-4 py-12 flex flex-col items-center"> {/* Added flex-col items-center */}
+          {/* Message for non-logged-in users */}
+          {isNotLoggedIn && (
+             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-8 w-full max-w-2xl" role="alert"> {/* Added w-full max-w-2xl */}
+               <p className="font-bold">Programme généré !</p>
+               <p>
+                 Pour accéder au programme complet, suivre vos performances semaine après semaine et l'enregistrer dans votre espace personnel, vous devez être abonné.
+                 {/* Updated button style */}
+                 <Link to="/tarifs" className="inline-block ml-4 px-4 py-2 bg-afonte-red text-white hover:bg-red-700 rounded-md font-semibold transition-colors duration-200">
+                   Voir les tarifs
+                 </Link>
+               </p>
+             </div>
+          )}
+
           <Card className="w-full max-w-2xl shadow-lg">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold text-gray-800">{generatedProgram.title}</CardTitle>
@@ -205,32 +347,82 @@ const ProgrammeGenerator: React.FC = () => {
               <Accordion type="single" collapsible className="w-full">
                 {generatedProgram.weeks.map((week) => (
                   <AccordionItem value={`week-${week.weekNumber}`} key={week.weekNumber}>
-                    <AccordionTrigger className="text-lg font-semibold text-gray-800">Semaine {week.weekNumber}</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4">
+                    <AccordionTrigger className="text-lg font-semibold text-gray-800 px-4">Semaine {week.weekNumber}</AccordionTrigger> {/* Added px-4 */}
+                    <AccordionContent className="py-4 px-4"> {/* Added px-4 */}
+                      <div className="space-y-6"> {/* Increased spacing */}
                         {week.days.map((day) => (
-                          <div key={day.dayNumber} className="border-t pt-4">
-                            <h4 className="text-md font-semibold mb-2">Jour {day.dayNumber}</h4>
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Exercice</TableHead>
-                                  <TableHead>Séries</TableHead>
-                                  <TableHead>Répétitions</TableHead>
-                                  <TableHead>Notes</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {day.exercises.map((exercise, index) => (
-                                  <TableRow key={index}>
-                                    <TableCell className="font-medium">{exercise.name}</TableCell>
-                                    <TableCell>{exercise.sets}</TableCell>
-                                    <TableCell>{exercise.reps}</TableCell>
-                                    <TableCell>{exercise.notes}</TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
+                          // Adjusted styling for the day container
+                          <div key={day.dayNumber} className="border rounded-md bg-gray-50 w-full p-4"> {/* Added p-4 */}
+                            <h4 className="text-lg font-bold mb-4 text-gray-800">Jour {day.dayNumber}</h4> {/* Increased font size */}
+
+                            {/* Map over exercises within this day */}
+                            {day.exercises.map((exercise, exerciseIndex) => {
+                               // Determine number of sets based on program type
+                               const numberOfSets = generatedProgram.is531 && exercise.setsDetails
+                                  ? exercise.setsDetails.length
+                                  : parseInt(exercise.sets, 10) || 0;
+
+                               const setsArray = Array.from({ length: numberOfSets }, (_, i) => i);
+
+                               return (
+                                  // Container for a single exercise
+                                  <div key={exerciseIndex} className="mb-6 last:mb-0"> {/* Added margin-bottom */}
+                                     <p className="font-semibold text-gray-800 mb-2">{exercise.name}</p> {/* Exercise name */}
+                                     {/* Display muscles worked */}
+                                     {exercise.muscles && exercise.muscles.length > 0 && (
+                                        <p className="text-sm text-gray-600 italic mb-2">Muscles: {exercise.muscles.join(', ')}</p>
+                                     )}
+                                     {/* Display program notes */}
+                                     {exercise.notes && <p className="text-sm text-gray-500 italic mb-2">Notes: {exercise.notes}</p>}
+
+                                     {/* Table or list for sets */}
+                                     <Table className="mt-2"> {/* Added margin-top */}
+                                       <TableHeader>
+                                         <TableRow>
+                                           <TableHead className="text-center">Série</TableHead>
+                                           <TableHead className="text-center">Répétitions</TableHead>
+                                           <TableHead className="text-center">Poids (kg)</TableHead>
+                                         </TableRow>
+                                       </TableHeader>
+                                       <TableBody>
+                                         {/* Render sets based on is531 flag */}
+                                         {generatedProgram.is531 && exercise.setsDetails ? (
+                                           exercise.setsDetails.map((set, setIndex) => (
+                                             <TableRow key={setIndex}>
+                                               <TableCell className="text-center">{set.setNumber}</TableCell>
+                                               <TableCell className={cn("text-center", set.isAmrap && 'font-bold text-afonte-red')}>
+                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>
+                                                     {set.reps} {set.isAmrap && '(AMRAP)'}
+                                                  </span>
+                                               </TableCell>
+                                               <TableCell className="text-center">
+                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>
+                                                     {set.calculatedWeight} kg ({Math.round(set.percentage * 100)}%)
+                                                  </span>
+                                               </TableCell>
+                                             </TableRow>
+                                           ))
+                                         ) : (
+                                           setsArray.map((setIndex) => (
+                                             <TableRow key={setIndex}>
+                                               <TableCell className="text-center">{setIndex + 1}</TableCell>
+                                               <TableCell className="text-center">
+                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>{exercise.sets}</span> {/* Use exercise.sets for total sets */}
+                                               </TableCell>
+                                               <TableCell className="text-center">
+                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>{exercise.reps}</span> {/* Use exercise.reps for rep range */}
+                                               </TableCell>
+                                               <TableCell className="text-center">
+                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>-- kg</span> {/* Placeholder */}
+                                               </TableCell>
+                                             </TableRow>
+                                           ))
+                                         )}
+                                       </TableBody>
+                                     </Table>
+                                  </div>
+                               );
+                            })}
                           </div>
                         ))}
                       </div>
@@ -311,6 +503,231 @@ const ProgrammeGenerator: React.FC = () => {
                   )}
                 />
 
+                {/* Main Lifts Selection (Conditionally rendered) */}
+                {show1RMInputsSection && (
+                    <FormField
+                        control={form.control}
+                        name="selectedMainLifts"
+                        render={() => (
+                            <FormItem>
+                                <div className="mb-4">
+                                    <FormLabel className="text-lg font-semibold text-gray-800">Exercices principaux à inclure</FormLabel>
+                                    <FormDescription className="text-gray-600">
+                                        Sélectionnez les exercices de force que vous souhaitez faire.
+                                    </FormDescription>
+                                </div>
+                                {mainLiftsOptions.map((item) => (
+                                    <FormField
+                                        key={item.id}
+                                        control={form.control}
+                                        name="selectedMainLifts"
+                                        render={({ field }) => {
+                                            return (
+                                                <FormItem
+                                                    key={item.id}
+                                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                                >
+                                                    <FormControl>
+                                                        <Checkbox
+                                                            checked={field.value?.includes(item.id)}
+                                                            onCheckedChange={(checked) => {
+                                                                return checked
+                                                                    ? field.onChange([...(field.value || []), item.id])
+                                                                    : field.onChange(
+                                                                        field.value?.filter(
+                                                                            (value) => value !== item.id
+                                                                        )
+                                                                    );
+                                                            }}
+                                                        />
+                                                    </FormControl>
+                                                    <FormLabel className="font-normal text-gray-700">
+                                                        {item.label}
+                                                    </FormLabel>
+                                                </FormItem>
+                                            );
+                                        }}
+                                    />
+                                ))}
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
+
+                {/* 1RM Inputs (Conditionally rendered) */}
+                {show1RMInputsSection && (selectedMainLifts.length > 0) && (
+                    <div className="space-y-4 border-t pt-6 mt-6"> {/* Added border and padding */}
+                        <h3 className="text-xl font-bold text-gray-800">Vos performances maximales</h3>
+                        <p className="text-gray-600 text-sm">Entrez le poids et le nombre de répétitions maximales que vous pouvez faire pour les mouvements sélectionnés.</p>
+                        {selectedMainLifts.includes("Squat barre") && (
+                            <div className="flex items-end space-x-2">
+                                <FormField
+                                    control={form.control}
+                                    name="squat1RM"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormLabel>Squat (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Ex: 100" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="squatRmType"
+                                    render={({ field }) => (
+                                        <FormItem className="w-24">
+                                            <FormLabel>RM</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="RM" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {rmTypeOptions.map((rm) => (
+                                                        <SelectItem key={rm} value={rm.toString()}>
+                                                            {rm}RM
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        )}
+                        {selectedMainLifts.includes("Développé couché") && (
+                            <div className="flex items-end space-x-2">
+                                <FormField
+                                    control={form.control}
+                                    name="bench1RM"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormLabel>Développé Couché (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Ex: 80" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="benchRmType"
+                                    render={({ field }) => (
+                                        <FormItem className="w-24">
+                                            <FormLabel>RM</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="RM" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {rmTypeOptions.map((rm) => (
+                                                        <SelectItem key={rm} value={rm.toString()}>
+                                                            {rm}RM
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        )}
+                        {selectedMainLifts.includes("Soulevé de terre") && (
+                            <div className="flex items-end space-x-2">
+                                <FormField
+                                    control={form.control}
+                                    name="deadlift1RM"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormLabel>Soulevé de Terre (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Ex: 150" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="deadliftRmType"
+                                    render={({ field }) => (
+                                        <FormItem className="w-24">
+                                            <FormLabel>RM</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="RM" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {rmTypeOptions.map((rm) => (
+                                                        <SelectItem key={rm} value={rm.toString()}>
+                                                            {rm}RM
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        )}
+                        {selectedMainLifts.includes("Développé militaire barre") && (
+                            <div className="flex items-end space-x-2">
+                                <FormField
+                                    control={form.control}
+                                    name="ohp1RM"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormLabel>Overhead Press (kg)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Ex: 50" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="ohpRmType"
+                                    render={({ field }) => (
+                                        <FormItem className="w-24">
+                                            <FormLabel>RM</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="RM" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {rmTypeOptions.map((rm) => (
+                                                        <SelectItem key={rm} value={rm.toString()}>
+                                                            {rm}RM
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
+
+
                 {/* Niveau d'expérience */}
                 <FormField
                   control={form.control}
@@ -355,83 +772,55 @@ const ProgrammeGenerator: React.FC = () => {
                   )}
                 />
 
-                {/* Type de split préféré */}
-                <FormField
-                  control={form.control}
-                  name="split"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel className="text-lg font-semibold text-gray-800">Type de split préféré</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Full Body (Tout le corps)" />
-                            </FormControl>
-                            <FormLabel className="font-normal text-gray-700">
-                              Full Body (Tout le corps)
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Half Body (Haut / Bas)" />
-                            </FormControl>
-                            <FormLabel className="font-normal text-gray-700">
-                              Half Body (Haut / Bas)
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Push Pull Legs" />
-                            </FormControl>
-                            <FormLabel className="font-normal text-gray-700">
-                              Push Pull Legs
-                            </FormLabel>
-                          </FormItem>
-                           <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="Autre / Pas de préférence" />
-                            </FormControl>
-                            <FormLabel className="font-normal text-gray-700">
-                              Autre / Pas de préférence
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Removed: Type de split préféré */}
 
-                {/* Jours d'entraînement / semaine */}
+                {/* Jours d'entraînement / semaine (Select) */}
                 <FormField
                   control={form.control}
                   name="joursEntrainement"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-semibold text-gray-800">Jours d'entraînement / semaine</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="3" {...field} />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez le nombre de jours" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {joursEntrainementOptions.map((day) => (
+                            <SelectItem key={day} value={day.toString()}>
+                              {day} jour{day > 1 ? 's' : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* Durée max par séance (minutes) */}
+                {/* Durée max par séance (minutes) (Select) */}
                 <FormField
                   control={form.control}
                   name="dureeMax"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-semibold text-gray-800">Durée max par séance (minutes)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="60" {...field} />
-                      </FormControl>
+                      <FormLabel className="text-lg font-semibold text-gray-800">Durée max par séance</FormLabel>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez la durée maximale" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {dureeMaxOptions.map((duration) => (
+                            <SelectItem key={duration} value={duration.toString()}>
+                              {formatDuration(duration)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -487,6 +876,107 @@ const ProgrammeGenerator: React.FC = () => {
                   )}
                 />
 
+                {/* Parties du corps prioritaires */}
+                 <FormField
+                   control={form.control}
+                   name="priorityMuscles"
+                   render={() => (
+                     <FormItem>
+                       <div className="mb-4">
+                         <FormLabel className="text-lg font-semibold text-gray-800">Parties du corps à développer en priorité</FormLabel>
+                         <FormDescription className="text-gray-600">
+                           Sélectionnez les groupes musculaires sur lesquels vous souhaitez mettre l'accent.
+                         </FormDescription>
+                       </div>
+                       {muscleGroupOptions.map((item) => (
+                         <FormField
+                           key={item.id}
+                           control={form.control}
+                           name="priorityMuscles"
+                           render={({ field }) => {
+                             return (
+                               <FormItem
+                                 key={item.id}
+                                 className="flex flex-row items-start space-x-3 space-y-0"
+                               >
+                                 <FormControl>
+                                   <Checkbox
+                                     checked={field.value?.includes(item.id)}
+                                     onCheckedChange={(checked) => {
+                                       return checked
+                                         ? field.onChange([...field.value, item.id])
+                                         : field.onChange(
+                                             field.value?.filter(
+                                               (value) => value !== item.id
+                                             )
+                                           );
+                                     }}
+                                   />
+                                 </FormControl>
+                                 <FormLabel className="font-normal text-gray-700">
+                                   {item.label}
+                                 </FormLabel>
+                               </FormItem>
+                             );
+                           }}
+                         />
+                       ))}
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
+
+                 {/* Exercices prioritaires */}
+                 <FormField
+                   control={form.control}
+                   name="priorityExercises"
+                   render={() => (
+                     <FormItem>
+                       <div className="mb-4">
+                         <FormLabel className="text-lg font-semibold text-gray-800">Exercices prioritaires</FormLabel>
+                         <FormDescription className="text-gray-600">
+                           Sélectionnez les exercices sur lesquels vous souhaitez particulièrement progresser en force.
+                         </FormDescription>
+                       </div>
+                       {priorityExerciseOptions.map((item) => (
+                         <FormField
+                           key={item.id}
+                           control={form.control}
+                           name="priorityExercises"
+                           render={({ field }) => {
+                             return (
+                               <FormItem
+                                 key={item.id}
+                                 className="flex flex-row items-start space-x-3 space-y-0"
+                               >
+                                 <FormControl>
+                                   <Checkbox
+                                     checked={field.value?.includes(item.id)}
+                                     onCheckedChange={(checked) => {
+                                       return checked
+                                         ? field.onChange([...field.value, item.id])
+                                         : field.onChange(
+                                             field.value?.filter(
+                                               (value) => value !== item.id
+                                             )
+                                           );
+                                     }}
+                                   />
+                                 </FormControl>
+                                 <FormLabel className="font-normal text-gray-700">
+                                   {item.label}
+                                 </FormLabel>
+                               </FormItem>
+                             );
+                           }}
+                         />
+                       ))}
+                       <FormMessage />
+                     </FormItem>
+                   )}
+                 />
+
+
                 {/* Votre email */}
                  <FormField
                   control={form.control}
@@ -495,10 +985,16 @@ const ProgrammeGenerator: React.FC = () => {
                     <FormItem>
                       <FormLabel className="text-lg font-semibold text-gray-800">Votre email</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="vous@email.com" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="vous@email.com"
+                          {...field}
+                          readOnly={!!session} // Make readOnly if session exists
+                          className={cn(!!session && "bg-gray-100 cursor-not-allowed")} // Add styling for readOnly
+                        />
                       </FormControl>
                        <FormDescription className="text-gray-600">
-                          Entrez votre email pour enregistrer votre programme et le retrouver plus tard. Pas de spam, promis :)
+                          {session ? "Votre email de compte. Il sera utilisé pour enregistrer votre programme." : "Entrez votre email pour enregistrer votre programme et le retrouver plus tard. Pas de spam, promis :)"}
                         </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -506,7 +1002,7 @@ const ProgrammeGenerator: React.FC = () => {
                 />
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full bg-sbf-red text-white hover:bg-red-700 text-lg py-6" disabled={isSubmitting}>
+                <Button type="submit" className="w-full bg-afonte-red text-white hover:bg-red-700 text-lg py-6" disabled={isSubmitting}>
                   {isSubmitting ? 'Génération en cours...' : 'Générer mon programme'}
                 </Button>
               </form>
