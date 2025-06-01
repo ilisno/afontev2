@@ -37,77 +37,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"; // Import Select components
 
-// Define the schema for form validation
-const formSchema = z.object({
-  objectif: z.enum(["Prise de Masse", "Sèche / Perte de Gras", "Powerlifting", "Powerbuilding"], {
-    required_error: "Veuillez sélectionner un objectif principal.",
-  }),
-  experience: z.enum(["Débutant (< 1 an)", "Intermédiaire (1-3 ans)", "Avancé (3+ ans)"], {
-    required_error: "Veuillez sélectionner votre niveau d'expérience.",
-  }),
-  // Removed 'split' field as it will be determined automatically
-  joursEntrainement: z.coerce.number({
-    required_error: "Veuillez indiquer le nombre de jours d'entraînement.",
-    invalid_type_error: "Veuillez entrer un nombre valide.",
-  }).min(1, { message: "Doit être au moins 1." }).max(6, { message: "Doit être au maximum 6." }), // Updated max to 6
-  dureeMax: z.coerce.number({
-    required_error: "Veuillez indiquer la durée maximale par séance.",
-    invalid_type_error: "Veuillez entrer un nombre valide.",
-  }).min(30, { message: "Doit être au moins 30 minutes." }).max(105, { message: "Doit être au maximum 105 minutes (1h45)." }), // Updated min to 30 and max to 105
-  materiel: z.array(z.string()).optional(),
-  // New fields for 1RM (optional by default)
-  squat1RM: z.coerce.number().optional().nullable(),
-  bench1RM: z.coerce.number().optional().nullable(),
-  deadlift1RM: z.coerce.number().optional().nullable(),
-  ohp1RM: z.coerce.number().optional().nullable(),
-  // New fields for RM type (e.g., 1 for 1RM, 5 for 5RM)
-  squatRmType: z.coerce.number().optional().nullable(),
-  benchRmType: z.coerce.number().optional().nullable(),
-  deadliftRmType: z.coerce.number().optional().nullable(),
-  ohpRmType: z.coerce.number().optional().nullable(),
-  // New field for priority muscle groups
-  priorityMuscles: z.array(z.string()).optional(),
-  // New field for priority exercises
-  priorityExercises: z.array(z.string()).optional(),
-  // New field for selected main lifts
-  selectedMainLifts: z.array(z.string()).optional(),
-}).superRefine((data, ctx) => {
-    // Custom validation: If objective is Powerlifting or Powerbuilding, 1RM fields are required and > 0
-    if (data.objectif === "Powerlifting" || data.objectif === "Powerbuilding") {
-        const mainLiftsToCheck = [
-            { field: "squat1RM", rmTypeField: "squatRmType", name: "Squat barre", label: "Squat" },
-            { field: "bench1RM", rmTypeField: "benchRmType", name: "Développé couché", label: "Développé Couché" },
-            { field: "deadlift1RM", rmTypeField: "deadliftRmType", name: "Soulevé de terre", label: "Soulevé de Terre" },
-            { field: "ohp1RM", rmTypeField: "ohpRmType", name: "Développé militaire barre", label: "Overhead Press" },
-        ];
-
-        // If specific lifts are selected, their corresponding 1RMs are required.
-        if (data.selectedMainLifts && data.selectedMainLifts.length > 0) {
-            mainLiftsToCheck.forEach(liftInfo => {
-                if (data.selectedMainLifts?.includes(liftInfo.name)) {
-                    const rmField = liftInfo.field as keyof typeof data;
-                    const rmTypeField = liftInfo.rmTypeField as keyof typeof data;
-
-                    if (!data[rmField] || (data[rmField] as number) <= 0) {
-                        ctx.addIssue({
-                            code: z.ZodIssueCode.custom,
-                            message: `Veuillez entrer le poids pour votre ${liftInfo.label} (doit être > 0).`,
-                            path: [rmField],
-                        });
-                    }
-                    if (!data[rmTypeField] || (data[rmTypeField] as number) <= 0) {
-                        ctx.addIssue({
-                            code: z.ZodIssueCode.custom,
-                            message: `Veuillez sélectionner le type de RM pour votre ${liftInfo.label}.`,
-                            path: [rmTypeField],
-                        });
-                    }
-                }
-            });
-        }
-    }
-});
-
 
 const ProgrammeGenerator: React.FC = () => {
   const [generatedProgram, setGeneratedProgram] = useState<Program | null>(null);
@@ -118,6 +47,80 @@ const ProgrammeGenerator: React.FC = () => {
   const navigate = useNavigate();
   const session = useSession(); // Get the user session
   const isMobile = useIsMobile(); // Use the hook
+
+  // Define the schema for form validation dynamically based on session
+  const formSchema = React.useMemo(() => z.object({
+    objectif: z.enum(["Prise de Masse", "Sèche / Perte de Gras", "Powerlifting", "Powerbuilding"], {
+      required_error: "Veuillez sélectionner un objectif principal.",
+    }),
+    experience: z.enum(["Débutant (< 1 an)", "Intermédiaire (1-3 ans)", "Avancé (3+ ans)"], {
+      required_error: "Veuillez sélectionner votre niveau d'expérience.",
+    }),
+    joursEntrainement: z.coerce.number({
+      required_error: "Veuillez indiquer le nombre de jours d'entraînement.",
+      invalid_type_error: "Veuillez entrer un nombre valide.",
+    }).min(1, { message: "Doit être au moins 1." }).max(6, { message: "Doit être au maximum 6." }), // Updated max to 6
+    dureeMax: z.coerce.number({
+      required_error: "Veuillez indiquer la durée maximale par séance.",
+      invalid_type_error: "Veuillez entrer un nombre valide.",
+    }).min(30, { message: "Doit être au moins 30 minutes." }).max(105, { message: "Doit être au maximum 105 minutes (1h45)." }), // Updated min to 30 and max to 105
+    materiel: z.array(z.string()).optional(),
+    // New fields for 1RM (optional by default)
+    squat1RM: z.coerce.number().optional().nullable(),
+    bench1RM: z.coerce.number().optional().nullable(),
+    deadlift1RM: z.coerce.number().optional().nullable(),
+    ohp1RM: z.coerce.number().optional().nullable(),
+    // New fields for RM type (e.g., 1 for 1RM, 5 for 5RM)
+    squatRmType: z.coerce.number().optional().nullable(),
+    benchRmType: z.coerce.number().optional().nullable(),
+    deadliftRmType: z.coerce.number().optional().nullable(),
+    ohpRmType: z.coerce.number().optional().nullable(),
+    // New field for priority muscle groups
+    priorityMuscles: z.array(z.string()).optional(),
+    // New field for priority exercises
+    priorityExercises: z.array(z.string()).optional(),
+    // New field for selected main lifts
+    selectedMainLifts: z.array(z.string()).optional(),
+    email: session?.user?.email
+      ? z.string().email({ message: "Veuillez entrer une adresse email valide." })
+      : z.string().email({ message: "Veuillez entrer une adresse email valide." }).min(1, "L'email est requis pour enregistrer votre programme."),
+  }).superRefine((data, ctx) => {
+      // Custom validation: If objective is Powerlifting or Powerbuilding, 1RM fields are required and > 0
+      if (data.objectif === "Powerlifting" || data.objectif === "Powerbuilding") {
+          const mainLiftsToCheck = [
+              { field: "squat1RM", rmTypeField: "squatRmType", name: "Squat barre", label: "Squat" },
+              { field: "bench1RM", rmTypeField: "benchRmType", name: "Développé couché", label: "Développé Couché" },
+              { field: "deadlift1RM", rmTypeField: "deadliftRmType", name: "Soulevé de terre", label: "Soulevé de Terre" },
+              { field: "ohp1RM", rmTypeField: "ohpRmType", name: "Développé militaire barre", label: "Overhead Press" },
+          ];
+
+          // If specific lifts are selected, their corresponding 1RMs are required.
+          if (data.selectedMainLifts && data.selectedMainLifts.length > 0) {
+              mainLiftsToCheck.forEach(liftInfo => {
+                  if (data.selectedMainLifts?.includes(liftInfo.name)) {
+                      const rmField = liftInfo.field as keyof typeof data;
+                      const rmTypeField = liftInfo.rmTypeField as keyof typeof data;
+
+                      if (!data[rmField] || (data[rmField] as number) <= 0) {
+                          ctx.addIssue({
+                              code: z.ZodIssueCode.custom,
+                              message: `Veuillez entrer le poids pour votre ${liftInfo.label} (doit être > 0).`,
+                              path: [rmField],
+                          });
+                      }
+                      if (!data[rmTypeField] || (data[rmTypeField] as number) <= 0) {
+                          ctx.addIssue({
+                              code: z.ZodIssueCode.custom,
+                              message: `Veuillez sélectionner le type de RM pour votre ${liftInfo.label}.`,
+                              path: [rmTypeField],
+                          });
+                      }
+                  }
+              });
+          }
+      }
+  }), [session]); // Re-memoize if session changes
+
 
   // Initialize the form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -349,7 +352,7 @@ const ProgrammeGenerator: React.FC = () => {
                       <div className="space-y-6"> {/* Increased spacing */}
                         {week.days.map((day) => (
                           // Adjusted styling for the day container
-                          <div key={day.dayNumber} className="border rounded-md bg-gray-50 w-full p-4"> {/* Added p-4 */}
+                          <div key={day.dayNumber} className="border rounded-md bg-gray-50 w-full p-4"> {/* Added p-4, removed w-full */}
                             <h4 className="text-lg font-bold mb-4 text-gray-800">Jour {day.dayNumber}</h4> {/* Increased font size */}
 
                             {/* Map over exercises within this day */}
@@ -405,9 +408,6 @@ const ProgrammeGenerator: React.FC = () => {
                                                <TableCell className="text-center">{setIndex + 1}</TableCell>
                                                <TableCell className="text-center">
                                                   <span className={cn(isNotLoggedIn && 'blur-sm')}>{exercise.sets}</span> {/* Use exercise.sets for total sets */}
-                                               </TableCell>
-                                               <TableCell className="text-center">
-                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>{exercise.reps}</span> {/* Use exercise.reps for rep range */}
                                                </TableCell>
                                                <TableCell className="text-center">
                                                   <span className={cn(isNotLoggedIn && 'blur-sm')}>-- kg</span> {/* Placeholder */}
@@ -982,10 +982,16 @@ const ProgrammeGenerator: React.FC = () => {
                     <FormItem>
                       <FormLabel className="text-lg font-semibold text-gray-800">Votre email</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="vous@email.com" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="vous@email.com"
+                          {...field}
+                          readOnly={!!session} // Make readOnly if session exists
+                          className={cn(!!session && "bg-gray-100 cursor-not-allowed")} // Add styling for readOnly
+                        />
                       </FormControl>
                        <FormDescription className="text-gray-600">
-                          Entrez votre email pour enregistrer votre programme et le retrouver plus tard. Pas de spam, promis :)
+                          {session ? "Votre email de compte. Il sera utilisé pour enregistrer votre programme." : "Entrez votre email pour enregistrer votre programme et le retrouver plus tard. Pas de spam, promis :)"}
                         </FormDescription>
                       <FormMessage />
                     </FormItem>

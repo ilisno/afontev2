@@ -102,7 +102,7 @@ function Login() {
         if (!profile?.stripe_customer_id) {
           console.log("No Stripe customer ID found for user, attempting to create one...");
           try {
-            const { data, error: invokeError } = await supabase.functions.invoke('create-stripe-customer', {
+            const { data: customerData, error: invokeError } = await supabase.functions.invoke('create-stripe-customer', {
               body: {
                 userId: session.user.id,
                 email: session.user.email,
@@ -111,13 +111,13 @@ function Login() {
 
             if (invokeError) {
               console.error("Error invoking create-stripe-customer Edge Function:", invokeError);
-              showError("Erreur lors de la création de votre compte Stripe.");
-            } else if (data && data.customerId) {
-              console.log("Stripe customer created successfully:", data.customerId);
+              showError("Impossible de créer votre compte Stripe.");
+            } else if (customerData && customerData.customerId) {
+              console.log("Stripe customer created successfully:", customerData.customerId);
               showSuccess("Votre compte Stripe a été créé !");
               // The Edge Function itself updates the profile, so no need to do it here again.
             } else {
-              console.error("create-stripe-customer Edge Function returned unexpected data:", data);
+              console.error("create-stripe-customer Edge Function returned unexpected data:", customerData);
               showError("Réponse inattendue de l'API Stripe.");
             }
           } catch (err) {
