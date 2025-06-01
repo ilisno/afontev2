@@ -229,31 +229,38 @@ const ProgrammeGenerator: React.FC = () => {
        setGeneratedProgram(program);
        console.log("Program generated:", program);
 
-       // --- START: Direct email insertion into subscriber tables ---
+       // --- START: Direct email insertion into subscriber tables (without onConflict) ---
        if (values.email) {
          console.log(`Attempting to insert email ${values.email} into email_subscribers and email_subscribers_2.`);
+         
+         // Insert into email_subscribers
          const { error: subError1 } = await supabase
            .from('email_subscribers')
-           .insert({ email: values.email })
-           .onConflict('email')
-           .doNothing(); // Ignore if email already exists
+           .insert({ email: values.email });
 
          if (subError1) {
-           console.error("Error inserting email into email_subscribers:", subError1);
+           if (subError1.code === '23505') { // Unique constraint violation
+             console.log("Email already exists in email_subscribers, doing nothing.");
+           } else {
+             console.error("Error inserting email into email_subscribers:", subError1);
+           }
          } else {
-           console.log("Email inserted/ignored in email_subscribers.");
+           console.log("Email inserted successfully into email_subscribers.");
          }
 
+         // Insert into email_subscribers_2
          const { error: subError2 } = await supabase
            .from('email_subscribers_2')
-           .insert({ email: values.email })
-           .onConflict('email')
-           .doNothing(); // Ignore if email already exists
+           .insert({ email: values.email });
 
          if (subError2) {
-           console.error("Error inserting email into email_subscribers_2:", subError2);
+           if (subError2.code === '23505') { // Unique constraint violation
+             console.log("Email already exists in email_subscribers_2, doing nothing.");
+           } else {
+             console.error("Error inserting email into email_subscribers_2:", subError2);
+           }
          } else {
-           console.log("Email inserted/ignored in email_subscribers_2.");
+           console.log("Email inserted successfully into email_subscribers_2.");
          }
        }
        // --- END: Direct email insertion ---
