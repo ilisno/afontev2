@@ -66,6 +66,16 @@ const plans: PricingPlan[] = [
   },
 ];
 
+// Calculate general discounts for the toggle buttons (using Premium plan as reference)
+const premiumMonthlyPrice = plans[0].monthlyPrice;
+const premiumAnnualPrice = plans[0].annualPrice;
+const premiumLifetimePrice = plans[0].lifetimePrice;
+
+const annualDiscountPercentage = Math.round(((premiumMonthlyPrice * 12 - premiumAnnualPrice) / (premiumMonthlyPrice * 12)) * 100);
+// For lifetime, compare to 5 years (60 months) of monthly payments for a meaningful percentage
+const lifetimeDiscountPercentage = premiumLifetimePrice ? Math.round(((premiumMonthlyPrice * 60 - premiumLifetimePrice) / (premiumMonthlyPrice * 60)) * 100) : 0;
+
+
 const TarifsTest: React.FC = () => {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual' | 'one-time'>('monthly');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -200,12 +210,12 @@ const TarifsTest: React.FC = () => {
                   Mensuel
                 </ToggleGroupItem>
                 <ToggleGroupItem value="annual" className="px-4 py-2 rounded-md data-[state=on]:bg-afonte-red data-[state=on]:text-white">
-                  Annuel
+                  Annuel (-{annualDiscountPercentage}%)
                 </ToggleGroupItem>
                 {/* Only show 'À vie' option if the current plan has a lifetime price */}
                 {plans.some(p => p.lifetimePriceId) && (
                   <ToggleGroupItem value="one-time" className="px-4 py-2 rounded-md">
-                    À vie
+                    À vie (-{lifetimeDiscountPercentage}%)
                   </ToggleGroupItem>
                 )}
               </ToggleGroup>
