@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react';
 interface StripePricingTableProps {
   pricingTableId: string;
   publishableKey: string;
+  customerEmail?: string; // Add this prop
 }
 
 const StripePricingTable: React.FC<StripePricingTableProps> = ({
   pricingTableId,
   publishableKey,
+  customerEmail, // Destructure the new prop
 }) => {
   const [clientReferenceId, setClientReferenceId] = useState<string | undefined>(undefined);
 
@@ -25,13 +27,14 @@ const StripePricingTable: React.FC<StripePricingTableProps> = ({
 
   // Render the custom element. React handles rendering custom elements.
   // Attributes are passed as strings.
-  // We use conditional spread syntax to add client-reference-id only if it exists.
+  // We use conditional spread syntax to add client-reference-id and customer-email only if they exist.
   return (
     <div className="stripe-pricing-table-container">
       <stripe-pricing-table
         pricing-table-id={pricingTableId}
         publishable-key={publishableKey}
         {...(clientReferenceId && { 'client-reference-id': clientReferenceId })}
+        {...(customerEmail && { 'customer-email': customerEmail })} {/* Add this line */}
       >
       </stripe-pricing-table>
     </div>
