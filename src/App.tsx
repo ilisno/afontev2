@@ -12,7 +12,7 @@ import CoachVirtuel from "./pages/CoachVirtuel";
 import MonEspace from "./pages/MonEspace";
 import Login from "./pages/Login";
 import Tarifs from "./pages/Tarifs";
-import TarifTest from "./pages/TarifTest"; {/* Import TarifTest */}
+import TarifsTest from "./pages/TarifTest"; {/* Corrected Import: TarifsTest */}
 import Merci1 from "./pages/Merci1";
 import Merci2 from "./pages/Merci2";
 import MentionsLegales from "./pages/MentionsLegales";
@@ -44,7 +44,7 @@ const App = () => (
               <Route path="/mon-espace" element={<MonEspace />} />
               <Route path="/login" element={<Login />} />
               <Route path="/tarifs" element={<Tarifs />} />
-              <Route path="/tariftest" element={<TarifsTest />} /> {/* Add TarifTest route */}
+              <Route path="/tariftest" element={<TarifsTest />} /> {/* Route remains the same */}
               <Route path="/merci1" element={<Merci1 />} />
               <Route path="/merci2" element={<Merci2 />} />
               <Route path="/mentions-legales" element={<MentionsLegales />} />
