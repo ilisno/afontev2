@@ -16,10 +16,12 @@ interface PricingPlan {
   title: string;
   description: string;
   features: string[];
-  monthlyPrice: string;
+  monthlyPrice: number; // Stored as number for calculations
   monthlyPriceId: string; // Stripe Price ID for monthly
-  annualPrice: string;
+  annualPrice: number; // Stored as number for calculations
   annualPriceId: string; // Stripe Price ID for annual
+  lifetimePrice?: number; // Optional for coaching plan
+  lifetimePriceId?: string; // Optional for coaching plan
   isBestOffer?: boolean;
   trialDays?: number; // Number of trial days for this plan
 }
@@ -36,10 +38,12 @@ const plans: PricingPlan[] = [
       "Suivi détaillé de vos performances (poids, répétitions) et de votre poids corporel.",
       "Guide ultime gratuit sur la musculation et la nutrition (valeur 19€).",
     ],
-    monthlyPrice: "9 €",
-    monthlyPriceId: "price_123_monthly_premium", // REPLACE WITH YOUR ACTUAL STRIPE PRICE ID
-    annualPrice: "7.38 €", // 9 * 0.82 = 7.38
-    annualPriceId: "price_456_annual_premium", // REPLACE WITH YOUR ACTUAL STRIPE PRICE ID
+    monthlyPrice: 9,
+    monthlyPriceId: "price_1RSCkwFv5sEu2MuCGZDs5oIz",
+    annualPrice: 89, // Given by user
+    annualPriceId: "price_1RSCkwFv5sEu2MuCpcJEtpox",
+    lifetimePrice: 199, // Given by user
+    lifetimePriceId: "price_1RSCkwFv5sEu2MuCKtekdVuj",
     isBestOffer: true,
     trialDays: 14,
   },
@@ -53,10 +57,10 @@ const plans: PricingPlan[] = [
       "Suivi nutritionnel personnalisé.",
       "Inclut toutes les fonctionnalités de l'Abonnement Premium.",
     ],
-    monthlyPrice: "99 €",
-    monthlyPriceId: "price_789_monthly_coaching", // REPLACE WITH YOUR ACTUAL STRIPE PRICE ID
-    annualPrice: "81.18 €", // 99 * 0.82 = 81.18
-    annualPriceId: "price_012_annual_coaching", // REPLACE WITH YOUR ACTUAL STRIPE PRICE ID
+    monthlyPrice: 99,
+    monthlyPriceId: "price_1RSLtIFv5sEu2MuCmH0pgSb8",
+    annualPrice: 899, // Given by user
+    annualPriceId: "price_1RSLtIFv5sEu2MuC8suSHcLG",
     isBestOffer: false,
     trialDays: 0, // No trial for coaching
   },
@@ -125,15 +129,25 @@ const TarifsTest: React.FC = () => {
       }
 
       // Determine the price ID based on the selected billing period
-      const priceId = billingPeriod === 'monthly' ? plan.monthlyPriceId : plan.annualPriceId;
-      const trialPeriodDays = plan.trialDays;
+      let priceId: string;
+      if (billingPeriod === 'monthly') {
+        priceId = plan.monthlyPriceId;
+      } else if (billingPeriod === 'annual') {
+        priceId = plan.annualPriceId;
+      } else if (billingPeriod === 'one-time' && plan.lifetimePriceId) {
+        priceId = plan.lifetimePriceId;
+      } else {
+        showError("Période de facturation non valide ou prix à vie non disponible pour ce plan.");
+        setIsSubmitting(false);
+        return;
+      }
 
       // Call the new Edge Function to create a Stripe Checkout Session
       const { data, error: invokeError } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           priceId: priceId,
           customerId: customerId,
-          trialPeriodDays: trialPeriodDays,
+          trialPeriodDays: plan.trialDays, // Trial days apply to both monthly and annual if set
           successUrl: window.location.origin + '/merci1', // Redirect after successful payment
           cancelUrl: window.location.origin + '/tariftest', // Redirect if payment is cancelled
         },
@@ -188,9 +202,12 @@ const TarifsTest: React.FC = () => {
                 <ToggleGroupItem value="annual" className="px-4 py-2 rounded-md data-[state=on]:bg-afonte-red data-[state=on]:text-white">
                   Annuel
                 </ToggleGroupItem>
-                <ToggleGroupItem value="one-time" className="px-4 py-2 rounded-md">
-                  À vie
-                </ToggleGroupItem>
+                {/* Only show 'À vie' option if the current plan has a lifetime price */}
+                {plans.some(p => p.lifetimePriceId) && (
+                  <ToggleGroupItem value="one-time" className="px-4 py-2 rounded-md">
+                    À vie
+                  </ToggleGroupItem>
+                )}
               </ToggleGroup>
             </div>
 
@@ -210,10 +227,35 @@ const TarifsTest: React.FC = () => {
                   <CardContent className="p-0 flex-grow flex flex-col justify-between">
                     <div>
                       <div className="text-center my-4">
-                        <span className="text-4xl font-bold text-gray-800">
-                          {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.annualPrice}
-                        </span>
-                        <span className="text-gray-600"> par mois</span>
+                        {billingPeriod === 'monthly' && (
+                          <span className="text-4xl font-bold text-gray-800">
+                            {plan.monthlyPrice} €<span className="text-gray-600 text-xl"> / mois</span>
+                          </span>
+                        )}
+                        {billingPeriod === 'annual' && (
+                          <>
+                            <span className="text-4xl font-bold text-gray-800">
+                              {(plan.annualPrice / 12).toFixed(2).replace('.', ',')} €<span className="text-gray-600 text-xl"> / mois</span>
+                            </span>
+                            <p className="text-sm text-gray-500 mt-1">Facturé {plan.annualPrice} € par an</p>
+                            {plan.monthlyPrice * 12 > plan.annualPrice && (
+                              <p className="text-sm text-afonte-red font-semibold">
+                                Économisez {(plan.monthlyPrice * 12 - plan.annualPrice).toFixed(0)} € par an !
+                              </p>
+                            )}
+                          </>
+                        )}
+                        {billingPeriod === 'one-time' && plan.lifetimePrice && (
+                          <span className="text-4xl font-bold text-gray-800">
+                            {plan.lifetimePrice} €<span className="text-gray-600 text-xl"> (à vie)</span>
+                          </span>
+                        )}
+                        {/* Display message if lifetime is not available for this plan */}
+                        {billingPeriod === 'one-time' && !plan.lifetimePrice && (
+                          <span className="text-xl font-bold text-gray-500">
+                            Non disponible à vie
+                          </span>
+                        )}
                       </div>
                       <ul className="space-y-3 text-gray-700 text-left">
                         {plan.features.map((feature, index) => (
@@ -226,7 +268,7 @@ const TarifsTest: React.FC = () => {
                     </div>
                     <Button
                       onClick={() => handleSubscribe(plan)}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || (billingPeriod === 'one-time' && !plan.lifetimePriceId)} // Disable if lifetime is selected but not available
                       className="w-full bg-afonte-red text-white hover:bg-red-700 text-lg py-6 mt-6"
                     >
                       {isSubmitting ? 'Chargement...' : (plan.trialDays && billingPeriod === 'monthly' ? 'Démarrer l\'essai' : 'M\'abonner')}
