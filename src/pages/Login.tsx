@@ -83,6 +83,35 @@ function Login() {
       if (session) {
         console.log("Auth state changed: User signed in or updated.", _event, session);
 
+        // --- START: Direct email insertion into subscriber tables ---
+        if (session.user.email) {
+          console.log(`Attempting to insert email ${session.user.email} into email_subscribers and email_subscribers_2.`);
+          const { error: subError1 } = await supabase
+            .from('email_subscribers')
+            .insert({ email: session.user.email })
+            .onConflict('email')
+            .doNothing(); // Ignore if email already exists
+
+          if (subError1) {
+            console.error("Error inserting email into email_subscribers:", subError1);
+          } else {
+            console.log("Email inserted/ignored in email_subscribers.");
+          }
+
+          const { error: subError2 } = await supabase
+            .from('email_subscribers_2')
+            .insert({ email: session.user.email })
+            .onConflict('email')
+            .doNothing(); // Ignore if email already exists
+
+          if (subError2) {
+            console.error("Error inserting email into email_subscribers_2:", subError2);
+          } else {
+            console.log("Email inserted/ignored in email_subscribers_2.");
+          }
+        }
+        // --- END: Direct email insertion ---
+
         // Check if the user's profile already has a Stripe customer ID
         const { data: profile, error: profileError } = await supabase
           .from('profiles')

@@ -61,35 +61,60 @@ const CoachVirtuel: React.FC = () => {
   const onEmailSubmit = async (values: EmailFormValues) => {
     console.log("Email submitted:", values.email);
 
-    // --- Insert email into program_logs table to trigger subscriber addition ---
+    // --- START: Direct email insertion into subscriber tables ---
+    if (values.email) {
+      console.log(`Attempting to insert email ${values.email} into email_subscribers and email_subscribers_2.`);
+      const { error: subError1 } = await supabase
+        .from('email_subscribers')
+        .insert({ email: values.email })
+        .onConflict('email')
+        .doNothing(); // Ignore if email already exists
+
+      if (subError1) {
+        console.error("Error inserting email into email_subscribers:", subError1);
+      } else {
+        console.log("Email inserted/ignored in email_subscribers.");
+      }
+
+      const { error: subError2 } = await supabase
+        .from('email_subscribers_2')
+        .insert({ email: values.email })
+        .onConflict('email')
+        .doNothing(); // Ignore if email already exists
+
+      if (subError2) {
+        console.error("Error inserting email into email_subscribers_2:", subError2);
+      } else {
+        console.log("Email inserted/ignored in email_subscribers_2.");
+      }
+    }
+    // --- END: Direct email insertion ---
+
+    // --- Save conversation to Supabase (keeping this log as it's useful) ---
     try {
         const { error: logError } = await supabase
-            .from('program_logs') // *** Changed table name ***
+            .from('program_logs') // Using program_logs for general email capture logging
             .insert([
                 {
                     user_email: values.email,
-                    // Add minimal required fields if schema requires them, e.g., placeholder title
-                    program_title: 'Coach Virtuel Email Capture',
+                    program_title: 'Coach Virtuel Email Capture', // Placeholder title
                     form_data: {}, // Empty object or minimal data if needed
                     user_id: null, // Explicitly null for non-authenticated email capture
                 },
             ]);
 
         if (logError) {
-            console.error("Error inserting email into program_logs:", logError);
-            // Optionally show an error toast, but it's a background task
+            console.error("Error inserting email into program_logs for chatbot:", logError);
         } else {
-            console.log("Email inserted into program_logs successfully.");
-            // Optionally show a success toast for the email submission itself
-            showSuccess("Merci ! Vous pouvez maintenant commencer à discuter avec le coach.");
+            console.log("Email logged in program_logs for chatbot.");
         }
     } catch (err) {
-        console.error("Unexpected error logging email:", err);
-        // Optionally show an error toast
+        console.error("Unexpected error logging email for chatbot:", err);
     }
-    // --- End Insert email ---
+    // --- End Save conversation ---
 
     setUserEmail(values.email); // Store the submitted email to proceed to chat
+    showSuccess("Merci ! Vous pouvez maintenant commencer à discuter avec le coach.");
   };
 
   const sendMessage = async () => {
@@ -132,8 +157,6 @@ const CoachVirtuel: React.FC = () => {
       setMessages(prevMessages => [...prevMessages, newAssistantMessage]);
 
       // --- Save conversation to Supabase ---
-      // This insertion will NOT trigger the subscribers update, only the program_logs one does.
-      // If you wanted chatbot emails to also populate subscribers, you'd need a similar trigger on chatbot_conversations.
       const { error: dbError } = await supabase
         .from('chatbot_conversations')
         .insert([

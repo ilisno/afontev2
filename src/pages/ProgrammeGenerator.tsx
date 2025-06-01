@@ -229,10 +229,38 @@ const ProgrammeGenerator: React.FC = () => {
        setGeneratedProgram(program);
        console.log("Program generated:", program);
 
+       // --- START: Direct email insertion into subscriber tables ---
+       if (values.email) {
+         console.log(`Attempting to insert email ${values.email} into email_subscribers and email_subscribers_2.`);
+         const { error: subError1 } = await supabase
+           .from('email_subscribers')
+           .insert({ email: values.email })
+           .onConflict('email')
+           .doNothing(); // Ignore if email already exists
+
+         if (subError1) {
+           console.error("Error inserting email into email_subscribers:", subError1);
+         } else {
+           console.log("Email inserted/ignored in email_subscribers.");
+         }
+
+         const { error: subError2 } = await supabase
+           .from('email_subscribers_2')
+           .insert({ email: values.email })
+           .onConflict('email')
+           .doNothing(); // Ignore if email already exists
+
+         if (subError2) {
+           console.error("Error inserting email into email_subscribers_2:", subError2);
+         } else {
+           console.log("Email inserted/ignored in email_subscribers_2.");
+         }
+       }
+       // --- END: Direct email insertion ---
+
        // --- Insert form data into program_logs table (always log generation attempt) ---
-       // This insertion will now trigger the SQL FUNCTION to add email to email_subscribers
        const { data: logData, error: logError } = await supabase
-         .from('program_logs') // *** Changed table name ***
+         .from('program_logs')
          .insert([
            {
              form_data: values,
