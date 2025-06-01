@@ -34,7 +34,7 @@ const StripePricingTable: React.FC<StripePricingTableProps> = ({
         pricing-table-id={pricingTableId}
         publishable-key={publishableKey}
         {...(clientReferenceId && { 'client-reference-id': clientReferenceId })}
-        {...(customerEmail && { 'customer-email': customerEmail })} {/* Add this line */}
+        {...(customerEmail && { 'customer-email': customerEmail })}
       >
       </stripe-pricing-table>
     </div>
