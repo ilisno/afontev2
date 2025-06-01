@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription as CardDescriptionShadcn } from "@/components/ui/card";
-import { Button } => "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CheckCircle, Book, UserCheck, Phone, Apple, MessageSquare, Dumbbell, Scale } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -188,7 +188,7 @@ const TarifsTest: React.FC = () => {
                 <ToggleGroupItem value="annual" className="px-4 py-2 rounded-md data-[state=on]:bg-afonte-red data-[state=on]:text-white">
                   Annuel
                 </ToggleGroupItem>
-                <ToggleGroupItem value="one-time" className="px-4 py-2 rounded-md"> {/* Removed disabled and text-gray-500 cursor-not-allowed */}
+                <ToggleGroupItem value="one-time" className="px-4 py-2 rounded-md">
                   À vie
                 </ToggleGroupItem>
               </ToggleGroup>
@@ -197,7 +197,7 @@ const TarifsTest: React.FC = () => {
             {/* Pricing Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {plans.map((plan) => (
-                <Card key={plan.id} className="bg-white shadow-md p-6 flex flex-col relative"> {/* Added relative here */}
+                <Card key={plan.id} className="bg-white shadow-md p-6 flex flex-col relative">
                   {plan.isBestOffer && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-afonte-yellow text-afonte-red text-xs font-bold px-3 py-1 rounded-full shadow-md">
                       Meilleure offre
