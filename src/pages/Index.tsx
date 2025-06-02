@@ -32,7 +32,7 @@ const Index: React.FC = () => {
         </p>
 
         {/* New text above CTA */}
-        <p className="text-lg font-bold text-gray-800 mb-4">Déjà plus de 100 clients satisfaits !</p>
+        <p className="text-lg font-bold text-gray-800 mb-4">Déjà plus de 130 clients satisfaits !</p>
 
         {/* Call To Action Button */}
         <Button
