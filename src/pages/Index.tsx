@@ -24,7 +24,7 @@ const Index: React.FC = () => {
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
           Ton programme 100% personnalisé <br className="hidden md:block"/>
           <span className="bg-afonte-red text-white px-3 py-1 rounded-md inline-block mt-2 md:mt-0">
-            Pour 10 kg de muscle en 1 an
+            +10kg de muscle en 1 an
           </span>
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl">
