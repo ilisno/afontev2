@@ -31,6 +31,9 @@ const Index: React.FC = () => {
           Obtenez votre programme de musculation personnalisé pour 10x moins cher qu'un coaching classique.
         </p>
 
+        {/* New text above CTA */}
+        <p className="text-lg font-bold text-gray-800 mb-4">Déjà plus de 100 clients satisfaits !</p>
+
         {/* Call To Action Button */}
         <Button
           asChild
