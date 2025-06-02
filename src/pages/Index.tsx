@@ -28,7 +28,7 @@ const Index: React.FC = () => {
           </span>
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl">
-          Obtenez votre programme de musculation personnalisé pour 10x moins cher qu'un coaching classique.
+          Obtenez votre programme de musculation personnalisé gratuitement en 30 secondes.
         </p>
 
         {/* New text above CTA */}
