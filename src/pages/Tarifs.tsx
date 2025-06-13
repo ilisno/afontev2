@@ -77,7 +77,7 @@ const lifetimeDiscountPercentage = premiumLifetimePrice ? Math.round(((premiumMo
 
 
 const TarifsTest: React.FC = () => {
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual' | 'one-time'>('annual'); // Changed default to 'annual'
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual' | 'one-time'>('annual');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const session = useSession();
   const navigate = useNavigate();
@@ -188,10 +188,8 @@ const TarifsTest: React.FC = () => {
       <main className="flex-grow container mx-auto px-4 py-12 flex justify-center">
         <Card className="w-full max-w-4xl shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-gray-800">Nos Tarifs (Test)</CardTitle>
-            <CardDescriptionShadcn className="text-gray-600">
-              Choisissez le plan qui correspond le mieux à vos objectifs.
-            </CardDescriptionShadcn>
+            <CardTitle className="text-2xl font-bold text-gray-800">Nos tarifs</CardTitle>
+            {/* Removed CardDescriptionShadcn */}
             <p className="text-lg font-bold text-gray-800 mt-4">Essai gratuit de 14 jours inclus !</p>
             <p className="text-md text-gray-700 mt-1">Payez annuellement et économisez 18%.</p>
           </CardHeader>
