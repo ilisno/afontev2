@@ -77,7 +77,7 @@ const lifetimeDiscountPercentage = premiumLifetimePrice ? Math.round(((premiumMo
 
 
 const TarifsTest: React.FC = () => {
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual' | 'one-time'>('monthly');
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual' | 'one-time'>('annual'); // Changed default to 'annual'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const session = useSession();
   const navigate = useNavigate();
