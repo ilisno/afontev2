@@ -411,7 +411,7 @@ const MonEspace: React.FC = () => {
             </CardHeader>
             <CardContent>
                <Button asChild className="w-full bg-afonte-red text-white hover:bg-red-700">
-                  <Link to="/login">Se connecter</Link> {/* Use Link for internal navigation */}
+                  <Link to="/login">Se connecter</Link> {/* Corrected: Removed extra div */}
                </Button>
             </CardContent>
           </Card>
@@ -857,7 +857,6 @@ const MonEspace: React.FC = () => {
                   <div className="mt-4">
                      {/* Corrected Button asChild usage */}
                      <Button asChild className="bg-afonte-red text-white hover:bg-red-700">
-                       {/* Removed the extra div */}
                        <Link to="/programme">Générer mon premier programme</Link>
                      </Button>
                   </div>
@@ -865,7 +864,6 @@ const MonEspace: React.FC = () => {
               )
             )}
           </CardContent>
-        </Card>
 
         {/* Stripe Billing Portal Button - Shown only when logged in and subscribed */}
         {session && isSubscribed && (
