@@ -30,37 +30,34 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      {/* Wrap children in a React.Fragment to satisfy TooltipProvider's single child requirement */}
-      <React.Fragment>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <SessionContextProvider supabaseClient={supabase}>
-            <PopupProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/programme" element={<ProgrammeGenerator />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/:categorySlug/:postSlug" element={<BlogPostDetail />} />
-                <Route path="/coach-virtuel" element={<CoachVirtuel />} />
-                <Route path="/mon-espace" element={<MonEspace />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/tarifs" element={<Tarifs />} />
-                <Route path="/tariftest" element={<TarifsTest />} />
-                <Route path="/merci1" element={<Merci1 />} />
-                <Route path="/merci2" element={<Merci2 />} />
-                <Route path="/mentions-legales" element={<MentionsLegales />} />
-                <Route path="/cgv" element={<CGV />} />
-                <Route path="/confidentialite" element={<Confidentialite />} />
-                <Route path="/a-propos" element={<APropos />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </PopupProvider>
-          </SessionContextProvider>
-        </BrowserRouter>
-      </React.Fragment>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <SessionContextProvider supabaseClient={supabase}>
+          <PopupProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/programme" element={<ProgrammeGenerator />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/:categorySlug/:postSlug" element={<BlogPostDetail />} />
+              <Route path="/coach-virtuel" element={<CoachVirtuel />} />
+              <Route path="/mon-espace" element={<MonEspace />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/tarifs" element={<Tarifs />} /> {/* This route now uses the content from the original TarifTest.tsx */}
+              <Route path="/tariftest" element={<TarifsTest />} /> {/* This route now uses the content from the original Tarifs.tsx */}
+              <Route path="/merci1" element={<Merci1 />} />
+              <Route path="/merci2" element={<Merci2 />} />
+              <Route path="/mentions-legales" element={<MentionsLegales />} />
+              <Route path="/cgv" element={<CGV />} />
+              <Route path="/confidentialite" element={<Confidentialite />} />
+              <Route path="/a-propos" element={<APropos />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PopupProvider>
+        </SessionContextProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
