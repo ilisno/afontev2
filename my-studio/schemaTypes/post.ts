@@ -49,6 +49,13 @@ export default defineType({
       title: 'Body',
       type: 'blockContent',
     }),
+    // ADDED: Excerpt field for blog listing
+    defineField({
+      name: 'excerpt',
+      title: 'Excerpt',
+      type: 'text', // Use 'text' for a longer string field
+      description: 'A short summary of the blog post for listings.',
+    }),
   ],
 
   preview: {
