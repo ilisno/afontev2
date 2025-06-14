@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, Instagram, Youtube } from 'lucide-react'; // Import icons
+import { Send, Instagram, Youtube, Link as LinkIcon } from 'lucide-react'; // Import Link as LinkIcon for TikTok
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -102,7 +102,7 @@ const Footer: React.FC = () => {
                       <Input
                         type="email"
                         placeholder="Entrez votre email ici"
-                        className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-sbf-red"
+                        className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-afonte-red"
                         {...field}
                       />
                     </FormControl>
@@ -110,7 +110,7 @@ const Footer: React.FC = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" size="icon" className="bg-sbf-red hover:bg-red-700 text-white">
+              <Button type="submit" size="icon" className="bg-afonte-red hover:bg-red-700 text-white">
                 <Send size={20} />
               </Button>
             </form>
@@ -118,11 +118,14 @@ const Footer: React.FC = () => {
 
           <h3 className="text-lg font-semibold text-white mb-4">Suivez-nous</h3>
           <div className="flex justify-center md:justify-start space-x-4">
-            <a href="https://www.instagram.com/smoothiebananefraise.fr/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
+            <a href="https://www.instagram.com/afonte.fr/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
               <Instagram size={24} />
             </a>
-            <a href="https://www.youtube.com/@smoothiebananefraise" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
+            <a href="https://www.youtube.com/@AFonte_fr" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
               <Youtube size={24} />
+            </a>
+            <a href="https://www.tiktok.com/@afonte.fr" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
+              <LinkIcon size={24} /> {/* Using LinkIcon for TikTok */}
             </a>
           </div>
         </div>
