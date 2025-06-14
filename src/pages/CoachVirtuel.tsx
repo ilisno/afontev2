@@ -39,7 +39,7 @@ const CoachVirtuel: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: "Bienvenue dans ton chat de musculation. Comment puis-je t'aider aujourd'hui ?" }
   ]);
-  const [inputMessage, setInputMessage] = '';
+  const [inputMessage, setInputMessage] = useState(''); // Corrected useState declaration
   const [isLoading, setIsLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null); // State to store the user's email
   const messagesEndRef = useRef<HTMLDivElement>(null); // Ref for auto-scrolling
