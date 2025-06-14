@@ -41,7 +41,7 @@ const CoachVirtuel: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: "Bienvenue dans ton chat de musculation. Comment puis-je t'aider aujourd'hui ?" }
   ]);
-  const [inputMessage, setInputMessage] = useState(''); // Corrected useState declaration
+  const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null); // State to store the user's email
   const messagesEndRef = useRef<HTMLDivElement>(null); // Ref for auto-scrolling
@@ -259,19 +259,15 @@ const CoachVirtuel: React.FC = () => {
               {messages.map((msg, index) => (
                 <div
                   key={index}
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`max-w-[70%] p-3 rounded-lg ${
+                    msg.role === 'user'
+                      ? 'bg-afonte-red text-white'
+                      : 'bg-gray-200 text-gray-800'
+                  } prose prose-sm`} {/* Added prose classes for Markdown styling */}
                 >
-                  <div
-                    className={`max-w-[70%] p-3 rounded-lg ${
-                      msg.role === 'user'
-                        ? 'bg-afonte-red text-white'
-                        : 'bg-gray-200 text-gray-800'
-                    } prose prose-sm`} {/* Added prose classes for Markdown styling */}
-                  >
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {msg.content}
-                    </ReactMarkdown>
-                  </div>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.content}
+                  </ReactMarkdown>
                 </div>
               ))}
               {isLoading && (
