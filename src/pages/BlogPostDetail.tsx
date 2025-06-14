@@ -172,11 +172,11 @@ const BlogPostDetail: React.FC = () => {
             {/* Render the Portable Text content from 'body' */}
             {/* Apply prose classes and max-w-prose to style and narrow the text block */}
             <div className="prose prose-lg max-w-prose mx-auto"> {/* Kept max-w-prose and mx-auto */}
-               {/* Check if post.body exists before rendering PortableText */}
-               {post.body ? (
+               {/* Check if post.body exists AND is an array before rendering PortableText */}
+               {post.body && Array.isArray(post.body) ? (
                    <PortableText value={post.body} />
                ) : (
-                   <p>Contenu de l'article non disponible.</p> // Fallback message
+                   <p>Contenu de l'article non disponible ou format incorrect.</p> // Fallback message
                )}
             </div>
 
