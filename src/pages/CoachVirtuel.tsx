@@ -19,6 +19,7 @@ import {
   FormMessage, // Import FormMessage
   FormDescription, // Import FormDescription
 } from "@/components/ui/form"; // Import form components
+import SimpleMarkdownRenderer from '@/components/SimpleMarkdownRenderer'; // Import the new component
 
 // Define message types
 interface Message {
@@ -266,7 +267,12 @@ const CoachVirtuel: React.FC = () => {
                         : 'bg-gray-200 text-gray-800'
                     }`}
                   >
-                    {msg.content}
+                    {/* Use SimpleMarkdownRenderer for assistant messages */}
+                    {msg.role === 'assistant' ? (
+                      <SimpleMarkdownRenderer content={msg.content} />
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                 </div>
               ))}
