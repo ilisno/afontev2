@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, Instagram, Youtube, Link as LinkIcon, TikTok } from 'lucide-react'; // Import TikTok icon
+import { Send, Instagram, Youtube, Link as LinkIcon } from 'lucide-react'; // Import Link as LinkIcon for TikTok
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -125,7 +125,7 @@ const Footer: React.FC = () => {
               <Youtube size={24} />
             </a>
             <a href="https://www.tiktok.com/@afonte.fr" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
-              <TikTok size={24} /> {/* Changed LinkIcon to TikTok */}
+              <LinkIcon size={24} /> {/* Using LinkIcon for TikTok */}
             </a>
           </div>
         </div>
