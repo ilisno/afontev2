@@ -259,15 +259,19 @@ const CoachVirtuel: React.FC = () => {
               {messages.map((msg, index) => (
                 <div
                   key={index}
-                  className={`max-w-[70%] p-3 rounded-lg ${
-                    msg.role === 'user'
-                      ? 'bg-afonte-red text-white'
-                      : 'bg-gray-200 text-gray-800'
-                  } prose prose-sm`} {/* Added prose classes for Markdown styling */}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {msg.content}
-                  </ReactMarkdown>
+                  <div
+                    className={`max-w-[70%] p-3 rounded-lg ${
+                      msg.role === 'user'
+                        ? 'bg-afonte-red text-white'
+                        : 'bg-gray-200 text-gray-800'
+                    } prose prose-sm`} {/* Added prose classes for Markdown styling */}
+                  >
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               ))}
               {isLoading && (
