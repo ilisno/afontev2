@@ -21,9 +21,9 @@ const Index: React.FC = () => {
 
       <main className="flex-grow container mx-auto px-4 py-12 flex flex-col items-center justify-center text-center">
         {/* Main Heading and Subtitle */}
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+        <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-4">
           Ton programme 100% personnalisé <br className="hidden md:block"/>
-          <span className="bg-afonte-red text-white px-3 py-1 rounded-md inline-block mt-4 text-base md:text-xl">
+          <span className="bg-afonte-red text-white px-3 py-1 rounded-md inline-block mt-4 text-sm md:text-xl">
             +10kg de muscle en 1 an
           </span>
         </h1>
