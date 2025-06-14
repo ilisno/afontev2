@@ -24,7 +24,7 @@ type BlogPost = {
 const Blog: React.FC = () => {
   // State to hold blog posts
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = true;
+  const [loading, setLoading] = useState(true); // Corrected: Initializing useState with true
   const [error, setError] = useState<string | null>(null);
 
   const { showRandomPopup } = usePopup(); // Use the showRandomPopup hook
@@ -48,7 +48,7 @@ const Blog: React.FC = () => {
             asset->{url}, // Fetch image URL
             alt
           },
-          excerpt // Assuming you have an excerpt field
+          excerpt // Assuming you have an an excerpt field
         } | order(publishedAt desc)`; // Order by published date, newest first
 
         console.log("Fetching posts with query:", query); // Log the query
