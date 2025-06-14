@@ -7,37 +7,40 @@ interface SimpleMarkdownRendererProps {
 const SimpleMarkdownRenderer: React.FC<SimpleMarkdownRendererProps> = ({ content }) => {
   const lines = content.split('\n');
   const elements: React.ReactNode[] = [];
+  let currentListItems: React.ReactNode[] = []; // To hold <li> elements
   let inList = false;
+
+  // Helper function to render any pending list
+  const renderCurrentList = () => {
+    if (inList && currentListItems.length > 0) {
+      elements.push(<ul key={`ul-${elements.length}`} className="list-disc pl-5 mb-2">{currentListItems}</ul>);
+      currentListItems = []; // Reset for next list
+      inList = false;
+    }
+  };
 
   lines.forEach((line, index) => {
     const trimmedLine = line.trim();
 
     // Handle Headings (##)
     if (trimmedLine.startsWith('## ')) {
-      if (inList) {
-        elements.push(<ul key={`ul-end-${index}`} className="list-disc pl-5 mb-2" />);
-        inList = false;
-      }
+      renderCurrentList(); // Render any pending list before a new block
       elements.push(<h2 key={index} className="text-xl font-bold mt-4 mb-2">{trimmedLine.substring(3)}</h2>);
     }
     // Handle List Items (-)
     else if (trimmedLine.startsWith('- ')) {
       if (!inList) {
-        elements.push(<ul key={`ul-start-${index}`} className="list-disc pl-5 mb-2">);
         inList = true;
       }
       // Handle bold within list items
       const listItemContent = trimmedLine.substring(2).split('**').map((part, i) => {
         return i % 2 === 1 ? <strong key={i}>{part}</strong> : part;
       });
-      elements.push(<li key={index} className="mb-1">{listItemContent}</li>);
+      currentListItems.push(<li key={index} className="mb-1">{listItemContent}</li>);
     }
     // Handle Paragraphs and Bold text within paragraphs
     else {
-      if (inList) {
-        elements.push(<ul key={`ul-end-${index}`} className="list-disc pl-5 mb-2" />);
-        inList = false;
-      }
+      renderCurrentList(); // Render any pending list before a new block
       if (trimmedLine) { // Only add if not an empty line
         const paragraphContent = trimmedLine.split('**').map((part, i) => {
           return i % 2 === 1 ? <strong key={i}>{part}</strong> : part;
@@ -49,10 +52,8 @@ const SimpleMarkdownRenderer: React.FC<SimpleMarkdownRendererProps> = ({ content
     }
   });
 
-  // Close list if still open at the end
-  if (inList) {
-    elements.push(<ul key="ul-final-end" className="list-disc pl-5 mb-2" />);
-  }
+  // Render any remaining list at the end of the content
+  renderCurrentList();
 
   return <>{elements}</>;
 };
