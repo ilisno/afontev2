@@ -19,8 +19,6 @@ import {
   FormMessage, // Import FormMessage
   FormDescription, // Import FormDescription
 } from "@/components/ui/form"; // Import form components
-import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
-import remarkGfm from 'remark-gfm'; // Import remarkGfm for GitHub Flavored Markdown
 
 // Define message types
 interface Message {
@@ -41,7 +39,7 @@ const CoachVirtuel: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: "Bienvenue dans ton chat de musculation. Comment puis-je t'aider aujourd'hui ?" }
   ]);
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState(''); // Corrected useState declaration
   const [isLoading, setIsLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null); // State to store the user's email
   const messagesEndRef = useRef<HTMLDivElement>(null); // Ref for auto-scrolling
@@ -266,11 +264,9 @@ const CoachVirtuel: React.FC = () => {
                       msg.role === 'user'
                         ? 'bg-afonte-red text-white'
                         : 'bg-gray-200 text-gray-800'
-                    } prose prose-sm`} {/* Added prose classes for Markdown styling */}
+                    }`}
                   >
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {msg.content}
-                    </ReactMarkdown>
+                    {msg.content}
                   </div>
                 </div>
               ))}

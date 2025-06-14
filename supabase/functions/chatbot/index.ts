@@ -34,7 +34,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "llama3-70b-8192", // Changed model to llama3-70b-8192
         messages: [
-          { "role": "system", "content": "Tu es un coach musculation. Donne des conseils pratiques et adaptés. Formate tes réponses en utilisant Markdown pour les titres (##), les listes à puces (-), et les noms d'exercices en gras (**exercice**). Utilise des sauts de ligne pour une meilleure lisibilité." },
+          { "role": "system", "content": "Tu es un coach musculation. Donne des conseils pratiques et adaptés." },
           ...messages // Include the last 5 messages from the client
         ],
         temperature: 0.7,
