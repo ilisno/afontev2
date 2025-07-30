@@ -27,9 +27,14 @@ const Index: React.FC = () => {
             +10kg de muscle en 1 an
           </span>
         </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl">
+        <p className="text-xl text-gray-600 mb-4 max-w-2xl">
           Obtenez votre programme de musculation personnalisé gratuitement en 30 secondes.
         </p>
+
+        {/* New: "100% gratuit à vie" badge */}
+        <div className="bg-afonte-yellow text-afonte-red text-lg md:text-xl font-bold px-4 py-2 rounded-full shadow-md mb-8">
+          100% GRATUIT À VIE !
+        </div>
 
         {/* New text above CTA */}
         <p className="text-lg font-bold text-gray-800 mb-4">Déjà plus de 130 clients satisfaits !</p>
@@ -191,18 +196,8 @@ const Index: React.FC = () => {
                 Oui, dans votre espace personnel, vous pouvez enregistrer vos performances pour chaque séance et suivre l'évolution de vos charges et de votre poids corporel au fil du temps.
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="item-4">
-              <AccordionTrigger className="text-lg font-semibold text-gray-800">Y a-t-il un essai gratuit ?</AccordionTrigger>
-              <AccordionContent className="text-gray-700">
-                Oui, nous offrons un essai gratuit de 14 jours pour notre abonnement Premium. Vous pouvez générer votre programme et commencer à l'utiliser sans engagement. <Link to="/tarifs" className="text-afonte-red hover:underline font-semibold">Découvrez nos tarifs et l'essai gratuit ici.</Link>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-5">
-              <AccordionTrigger className="text-lg font-semibold text-gray-800">Comment puis-je annuler mon abonnement ?</AccordionTrigger>
-              <AccordionContent className="text-gray-700">
-                Vous pouvez gérer et annuler votre abonnement à tout moment via le portail de facturation Stripe, accessible depuis votre espace personnel.
-              </AccordionContent>
-            </AccordionItem>
+            {/* Removed: FAQ item about free trial */}
+            {/* Removed: FAQ item about cancelling subscription */}
           </Accordion>
         </section>
 

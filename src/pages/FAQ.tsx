@@ -27,7 +27,7 @@ const FAQ: React.FC = () => {
               <AccordionItem value="item-2">
                 <AccordionTrigger className="text-lg font-semibold text-gray-800">Le coach virtuel est-il un vrai coach ?</AccordionTrigger>
                 <AccordionContent className="text-gray-700">
-                  Le coach virtuel est une intelligence artificielle entraînée pour vous donner des conseils de musculation et de nutrition. Il est disponible 24h/24 et 7j/7 pour répondre à vos questions. Pour un coaching humain et personnalisé, consultez nos offres de coaching premium.
+                  Le coach virtuel est une intelligence artificielle entraînée pour vous donner des conseils de musculation et de nutrition. Il est disponible 24h/24 et 7j/7 pour répondre à vos questions.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
@@ -36,12 +36,7 @@ const FAQ: React.FC = () => {
                   Oui, dans votre espace personnel, vous pouvez enregistrer vos performances pour chaque séance et suivre l'évolution de vos charges et de votre poids corporel au fil du temps.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-4">
-                <AccordionTrigger className="text-lg font-semibold text-gray-800">Comment puis-je annuler mon abonnement ?</AccordionTrigger>
-                <AccordionContent className="text-gray-700">
-                  Vous pouvez gérer et annuler votre abonnement à tout moment via le portail de facturation Stripe, accessible depuis votre espace personnel.
-                </AccordionContent>
-              </AccordionItem>
+              {/* Removed: FAQ item about cancelling subscription */}
             </Accordion>
           </CardContent>
         </Card>
