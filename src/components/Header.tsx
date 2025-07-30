@@ -74,7 +74,7 @@ const Header: React.FC = () => {
           <Link to="/programme" className="hover:underline">Générateur de programme</Link>
           <Link to="/coach-virtuel" className="hover:underline" onClick={handleCoachVirtuelClick}>Coach virtuel</Link>
           <Link to="/blog" className="hover:underline">Blog</Link>
-          <Link to="/tarifs" className="hover:underline">Tarifs</Link> {/* Added Tarifs link */}
+          {/* Removed Tarifs link */}
           {session ? ( // Show Mon espace and Logout if session exists
             <>
               <Link to="/mon-espace" className="hover:underline">Mon espace</Link>
@@ -96,7 +96,7 @@ const Header: React.FC = () => {
         <Link to="/programme" className="text-xl font-semibold" onClick={closeMenu}>Générateur de programme</Link>
         <Link to="/coach-virtuel" className="text-xl font-semibold" onClick={handleCoachVirtuelClick}>Coach virtuel</Link>
         <Link to="/blog" className="text-xl font-semibold" onClick={closeMenu}>Blog</Link>
-        <Link to="/tarifs" className="text-xl font-semibold" onClick={closeMenu}>Tarifs</Link> {/* Added Tarifs link */}
+        {/* Removed Tarifs link */}
          {session ? ( // Show Mon espace and Logout if session exists
             <>
               <Link to="/mon-espace" className="text-xl font-semibold" onClick={closeMenu}>Mon espace</Link>

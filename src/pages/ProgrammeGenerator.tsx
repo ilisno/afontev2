@@ -352,26 +352,25 @@ const ProgrammeGenerator: React.FC = () => {
 
   // Render the program if generated, otherwise render the form
   if (generatedProgram) {
-    // Check if user is NOT logged in
-    const isNotLoggedIn = !session;
+    // Removed: Check if user is NOT logged in
+    // const isNotLoggedIn = !session;
 
     return (
       <div className="flex flex-col min-h-screen bg-gray-100">
         <Header />
         <main className="flex-grow container mx-auto px-4 py-12 flex flex-col items-center"> {/* Added flex-col items-center */}
-          {/* Message for non-logged-in users */}
-          {isNotLoggedIn && (
-             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-8 w-full max-w-2xl" role="alert"> {/* Added w-full max-w-2xl */}
+          {/* Removed: Message for non-logged-in users */}
+          {/* {isNotLoggedIn && (
+             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-8 w-full max-w-2xl" role="alert">
                <p className="font-bold">Programme généré !</p>
                <p>
                  Pour accéder au programme complet, suivre vos performances semaine après semaine et l'enregistrer dans votre espace personnel, vous devez être abonné.
-                 {/* Updated button style */}
                  <Link to="/tarifs" className="inline-block ml-4 px-4 py-2 bg-afonte-red text-white hover:bg-red-700 rounded-md font-semibold transition-colors duration-200">
                    Voir les tarifs
                  </Link>
                </p>
              </div>
-          )}
+          )} */}
 
           <Card className="w-full max-w-2xl shadow-lg">
             <CardHeader className="text-center">
@@ -387,8 +386,8 @@ const ProgrammeGenerator: React.FC = () => {
                       <div className="space-y-6"> {/* Increased spacing */}
                         {week.days.map((day) => (
                           // Adjusted styling for the day container
-                          <div key={day.dayNumber} className="border rounded-md bg-gray-50 w-full p-4"> {/* Added p-4, removed w-full */}
-                            <h4 className="text-lg font-bold mb-4 text-gray-800">Jour {day.dayNumber}</h4> {/* Increased font size */}
+                          <div key={day.dayNumber} className="border rounded-md bg-gray-50 w-full"> {/* Removed p-4, added w-full */}
+                            <h4 className="text-lg font-bold mb-4 text-gray-800 px-4 pt-4">Jour {day.dayNumber}</h4> {/* Added px-4 pt-4 */}
 
                             {/* Map over exercises within this day */}
                             {day.exercises.map((exercise, exerciseIndex) => {
@@ -426,14 +425,14 @@ const ProgrammeGenerator: React.FC = () => {
                                              <TableRow key={setIndex}>
                                                <TableCell className="text-center">{set.setNumber}</TableCell>
                                                <TableCell className={cn("text-center", set.isAmrap && 'font-bold text-afonte-red')}>
-                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>
+                                                  {/* Removed: <span className={cn(isNotLoggedIn && 'blur-sm')}> */}
                                                      {set.reps} {set.isAmrap && '(AMRAP)'}
-                                                  </span>
+                                                  {/* Removed: </span> */}
                                                </TableCell>
                                                <TableCell className="text-center">
-                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>
+                                                  {/* Removed: <span className={cn(isNotLoggedIn && 'blur-sm')}> */}
                                                      {set.calculatedWeight} kg ({Math.round(set.percentage * 100)}%)
-                                                  </span>
+                                                  {/* Removed: </span> */}
                                                </TableCell>
                                              </TableRow>
                                            ))
@@ -442,10 +441,15 @@ const ProgrammeGenerator: React.FC = () => {
                                              <TableRow key={setIndex}>
                                                <TableCell className="text-center">{setIndex + 1}</TableCell>
                                                <TableCell className="text-center">
-                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>{exercise.sets}</span> {/* Use exercise.sets for total sets */}
+                                                  {/* Removed: <span className={cn(isNotLoggedIn && 'blur-sm')}>{exercise.sets}</span> */}
+                                                  {exercise.sets}
                                                </TableCell>
                                                <TableCell className="text-center">
-                                                  <span className={cn(isNotLoggedIn && 'blur-sm')}>-- kg</span> {/* Placeholder */}
+                                                  {/* Removed: <span className={cn(isNotLoggedIn && 'blur-sm')}>-- kg</span> */}
+                                                  {exercise.reps}
+                                               </TableCell>
+                                               <TableCell className="text-center">
+                                                  -- kg
                                                </TableCell>
                                              </TableRow>
                                            ))

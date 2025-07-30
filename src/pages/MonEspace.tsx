@@ -70,7 +70,7 @@ const MonEspace: React.FC = () => {
   const [selectedUserProgram, setSelectedUserProgram] = useState<UserTrainingProgram | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null); // New state for subscription status
+  // Removed: [isSubscribed, setIsSubscribed] = useState<boolean | null>(null); // New state for subscription status
 
   // State for renaming feature
   const [editingProgramId, setEditingProgramId] = useState<string | null>(null); // Use string for UUID
@@ -82,14 +82,14 @@ const MonEspace: React.FC = () => {
   const [isSavingWorkout, setIsSavingWorkout] = useState(false);
 
 
-  // Fetch programs and subscription status when session changes or component mounts
+  // Fetch programs when session changes or component mounts
   useEffect(() => {
     const fetchData = async () => {
       if (!session) {
         setIsLoading(false);
         setUserPrograms(null);
         setSelectedUserProgram(null);
-        setIsSubscribed(null); // Reset subscription status
+        // Removed: setIsSubscribed(null); // Reset subscription status
         setError(null);
         return;
       }
@@ -98,28 +98,11 @@ const MonEspace: React.FC = () => {
       setError(null);
       setUserPrograms(null);
       setSelectedUserProgram(null);
-      setIsSubscribed(null); // Reset before fetching
+      // Removed: setIsSubscribed(null); // Reset before fetching
 
       try {
-        // Fetch user profile to get subscription status
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('is_subscribed')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-          setError("Une erreur est survenue lors de la récupération de votre profil.");
-          showError("Impossible de charger votre profil.");
-          setIsSubscribed(false); // Assume not subscribed on error
-        } else {
-          console.log("Fetched profile data:", profileData);
-          setIsSubscribed(profileData?.is_subscribed || false); // Set subscription status
-        }
-
-        // Only fetch programs if subscribed
-        if (profileData?.is_subscribed) {
+        // Removed: Fetch user profile to get subscription status
+        // Removed: if (profileData?.is_subscribed) {
           const { data, error: dbError } = await supabase
             .from('training_programs')
             .select('*') // Select all columns including the 'program' JSONB
@@ -138,9 +121,9 @@ const MonEspace: React.FC = () => {
               setUserPrograms([]); // Set to empty array if no programs found
             }
           }
-        } else {
-          setUserPrograms([]); // No programs to show if not subscribed
-        }
+        // Removed: } else {
+        // Removed:   setUserPrograms([]); // No programs to show if not subscribed
+        // Removed: }
       } catch (err) {
         console.error("Unexpected error fetching data:", err);
         setError("Une erreur inattendue est survenue.");
@@ -423,12 +406,12 @@ const MonEspace: React.FC = () => {
 
 
   // Show loading state
-  if (isLoading || isSubscribed === null) { // Also wait for subscription status to be determined
+  if (isLoading) { // Removed: || isSubscribed === null
     return (
       <div className="flex flex-col min-h-screen bg-gray-100">
         <Header />
         <main className="flex-grow container mx-auto px-4 py-12 text-center">
-          <p>Chargement de vos programmes et de votre statut d'abonnement...</p>
+          <p>Chargement de vos programmes...</p> {/* Updated message */}
         </main>
         <Footer />
       </div>
@@ -455,37 +438,10 @@ const MonEspace: React.FC = () => {
     );
     }
 
-  // If logged in but not subscribed
-  if (!isSubscribed) {
-    return (
-      <div className="flex flex-col min-h-screen bg-gray-100">
-        <Header />
-        <main className="flex-grow container mx-auto px-4 py-12 flex justify-center items-center">
-          <Card className="w-full max-w-md shadow-lg text-center">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-800">Accès Réservé aux Abonnés</CardTitle>
-              <CardDescriptionShadcn className="text-gray-600">
-                Pour accéder à vos programmes et suivre vos performances, vous devez être abonné.
-              </CardDescriptionShadcn>
-            </CardHeader>
-            <CardContent>
-               <Button asChild className="w-full bg-afonte-red text-white hover:bg-red-700">
-                  <Link to="/tarifs">Voir nos offres d'abonnement</Link>
-               </Button>
-               <div className="mt-4 text-center">
-                  <Button variant="link" onClick={() => supabase.auth.signOut()} className="text-gray-600 hover:underline">
-                     Se déconnecter
-                  </Button>
-               </div>
-            </CardContent>
-          </Card>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  // Removed: If logged in but not subscribed block
+  // if (!isSubscribed) { ... }
 
-  // Show program list or selected program details (only if subscribed)
+  // Show program list or selected program details (always if logged in)
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Header />
@@ -600,7 +556,7 @@ const MonEspace: React.FC = () => {
                                                                 value={exerciseData.sets[setIndex]?.weight || ''}
                                                                 onChange={(e) => {
                                                                   const newWeight = e.target.value;
-                                                                  handleWorkoutInputChange(exercise.name, setIndex, 'weight', newWeight);
+                                                                  handleWorkoutInputChange(exercise.name, i, 'weight', newWeight);
                                                                   // Auto-fill weight for subsequent sets if this is the first set
                                                                   if (setIndex === 0) {
                                                                     for (let i = 1; i < numberOfSets; i++) {
@@ -867,10 +823,9 @@ const MonEspace: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Stripe Billing Portal Button - Shown only when logged in and subscribed */}
-        {session && isSubscribed && (
-            <div className="mt-8 text-center"> {/* Added margin-top and centered */}
-                {/* Replaced Button asChild with a simple <a> tag */}
+        {/* Removed Stripe Billing Portal Button */}
+        {/* {session && isSubscribed && (
+            <div className="mt-8 text-center">
                 <a
                   href="https://billing.stripe.com/p/login/fZu28rcc37c200Xepa87K00"
                   target="_blank"
@@ -880,7 +835,7 @@ const MonEspace: React.FC = () => {
                   Gérer mon abonnement
                 </a>
             </div>
-        )}
+        )} */}
 
       </main>
       <Footer />
