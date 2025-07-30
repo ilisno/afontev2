@@ -22,7 +22,7 @@ const Index: React.FC = () => {
       <main className="flex-grow container mx-auto px-4 py-12 flex flex-col items-center justify-center text-center">
         {/* Main Heading and Subtitle */}
         <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-4">
-          Ton programme 100% personnalisé <br className="hidden md:block"/>
+          Ton programme 100% personnalisé gratuit <br className="hidden md:block"/>
           <span className="bg-afonte-red text-white px-3 py-1 rounded-md inline-block mt-4 text-sm md:text-xl">
             +10kg de muscle en 1 an
           </span>
@@ -31,10 +31,10 @@ const Index: React.FC = () => {
           Obtenez votre programme de musculation personnalisé gratuitement en 30 secondes.
         </p>
 
-        {/* New: "100% gratuit à vie" badge */}
-        <div className="bg-afonte-yellow text-afonte-red text-lg md:text-xl font-bold px-4 py-2 rounded-full shadow-md mb-8">
+        {/* Removed: "100% gratuit à vie" badge */}
+        {/* <div className="bg-afonte-yellow text-afonte-red text-lg md:text-xl font-bold px-4 py-2 rounded-full shadow-md mb-8">
           100% GRATUIT À VIE !
-        </div>
+        </div> */}
 
         {/* New text above CTA */}
         <p className="text-lg font-bold text-gray-800 mb-4">Déjà plus de 130 clients satisfaits !</p>
