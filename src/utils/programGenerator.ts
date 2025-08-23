@@ -178,6 +178,23 @@ const shuffleArray = <T>(array: T[]): T[] => {
     return shuffled;
 };
 
+// Helper function to determine RPE note based on category and week number
+const getRpeNote = (category: ExerciseCategory, weekNum: number, objectif: ProgramFormData['objectif']): string => {
+    if (category === "Isolation légère") {
+        return "RPE 10"; // Push to failure
+    } else if (category === "Isolation lourde") {
+        const rpeMap: { [key: number]: number | string } = { 1: 8, 2: 8.5, 3: 9, 4: 10 };
+        return `RPE ${rpeMap[weekNum] || 8}`;
+    } else if (category === "Compound secondaire") {
+        const rpeMap: { [key: number]: number | string } = { 1: 7, 2: 7.5, 3: 8, 4: 9 };
+        return `RPE ${rpeMap[weekNum] || 7}`;
+    } else if (category === "Exercice de powerlifting") {
+        const rpeMap: { [key: number]: number } = { 1: 6, 2: 7, 3: 8, 4: 10 };
+        return `RPE ${rpeMap[weekNum] || 6}`;
+    }
+    return "";
+};
+
 
 export const generateProgramClientSide = (values: ProgramFormData): Program => {
   const { objectif, experience, joursEntrainement, materiel, dureeMax, squat1RM, bench1RM, deadlift1RM, ohp1RM, squatRmType, benchRmType, deadliftRmType, ohpRmType, priorityMuscles, priorityExercises, selectedMainLifts } = values;
@@ -495,177 +512,148 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
       const targetMuscleGroups = selectedSplitMuscles[dayIndex % numSplitDays];
 
-      let dayExercises: Exercise[] = [];
       const addedExerciseNames = new Set<string>();
-
-      const canAddExercise = (
-          exercise: Exercise,
-          currentExercisesCount: number,
-          currentAddedNames: Set<string>,
-          currentMuscleGroupCounts: { [key: string]: number },
-          dayTargetMuscleGroups: MuscleGroup[]
-      ): boolean => {
-           if (currentExercisesCount >= maxExercisesPerDay || currentAddedNames.has(exercise.name)) {
-               return false;
-           }
-
-           if (!dayTargetMuscleGroups.includes(exercise.muscleGroup)) {
-               return false;
-           }
-
-           const isAvailable = exercise.equipment.length === 0 || (materiel && materiel.some(eq => exercise.equipment.includes(eq)));
-           if (!isAvailable) {
-               return false;
-           }
-
-           if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
-               const currentCount = currentMuscleGroupCounts[exercise.muscleGroup] || 0;
-               if (currentCount >= 2) {
-                   return false;
-               }
-           }
-
-           if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
-                if ((weeklyVolume[exercise.muscleGroup] || 0) + baseSets > weeklyVolumeCap) {
-                    return false;
-                }
-           }
-           return true;
-       };
-
       let exercisesAddedCount = 0;
-      const commitAddExercise = (exercise: Exercise) => {
-           dayExercises.push(exercise);
-           addedExerciseNames.add(exercise.name);
-           exercisesAddedCount++;
-           if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
-               muscleGroupDailyCount[exercise.muscleGroup] = (muscleGroupDailyCount[exercise.muscleGroup] || 0) + 1;
-               weeklyVolume[exercise.muscleGroup] = (weeklyVolume[exercise.muscleGroup] || 0) + baseSets;
-           }
+
+      const addExerciseToDay = (exercise: Exercise, sets: string, reps: string, notes: string) => {
+        day.exercises.push({
+          name: exercise.name,
+          sets: sets,
+          reps: reps,
+          notes: notes,
+          muscles: exercise.muscles,
+        });
+        addedExerciseNames.add(exercise.name);
+        exercisesAddedCount++;
+        if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
+          muscleGroupDailyCount[exercise.muscleGroup] = (muscleGroupDailyCount[exercise.muscleGroup] || 0) + 1;
+          weeklyVolume[exercise.muscleGroup] = (weeklyVolume[exercise.muscleGroup] || 0) + parseInt(sets, 10);
+        }
       };
 
-
-      const availableExercisesForCurrentDaySplit = filterByMuscleGroups(availableExercises, targetMuscleGroups);
-
-      const powerliftingExercisesForDay = availableExercisesForCurrentDaySplit.filter(ex => ex.category === "Exercice de powerlifting");
-      const secondaryCompoundsForDay = availableExercisesForCurrentDaySplit.filter(ex => ex.category === "Compound secondaire");
-      const isolationHeavyForDay = availableExercisesForCurrentDaySplit.filter(ex => ex.category === "Isolation lourde");
-      const isolationLightForDay = availableExercisesForCurrentDaySplit.filter(ex => ex.category === "Isolation légère");
-
-
-      // Step 1: Add Primary Compound Lifts (Powerlifting category first, then other compounds)
-      shuffleArray(powerliftingExercisesForDay).slice(0, Math.min(powerliftingExercisesForDay.length, 2)).forEach(ex => {
-          if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
-              commitAddExercise(ex);
+      const canAddExercise = (exercise: Exercise): boolean => {
+        if (exercisesAddedCount >= maxExercisesPerDay || addedExerciseNames.has(exercise.name)) {
+          return false;
+        }
+        if (!targetMuscleGroups.includes(exercise.muscleGroup)) {
+          return false;
+        }
+        const isAvailable = exercise.equipment.length === 0 || (materiel && materiel.some(eq => exercise.equipment.includes(eq)));
+        if (!isAvailable) {
+            return false;
+        }
+        if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
+          const currentCount = muscleGroupDailyCount[exercise.muscleGroup] || 0;
+          if (currentCount >= 2) {
+            return false;
           }
-      });
+        }
+        if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
+            if ((weeklyVolume[exercise.muscleGroup] || 0) + baseSets > weeklyVolumeCap) {
+                return false;
+            }
+        }
+        return true;
+      };
 
-      shuffleArray(secondaryCompoundsForDay).slice(0, Math.min(secondaryCompoundsForDay.length, 2)).forEach(ex => {
-          if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
-              commitAddExercise(ex);
-          }
-      });
+      const daySpecificExercises = availableExercises.filter(ex => targetMuscleGroups.includes(ex.muscleGroup));
 
-      // Step 2: Add User-Prioritized Exercises
-      if (priorityExercises && priorityExercises.length > 0) {
-          const prioritized = shuffleArray(availableExercisesForCurrentDaySplit.filter(ex => priorityExercises.includes(ex.name) && !addedExerciseNames.has(ex.name)));
-          for (const ex of prioritized) {
-              if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
-                  commitAddExercise(ex);
+      let powerliftingPool = shuffleArray(daySpecificExercises.filter(ex => ex.category === "Exercice de powerlifting"));
+      let compoundSecondaryPool = shuffleArray(daySpecificExercises.filter(ex => ex.category === "Compound secondaire"));
+      let isolationHeavyPool = shuffleArray(daySpecificExercises.filter(ex => ex.category === "Isolation lourde"));
+      let isolationLightPool = shuffleArray(daySpecificExercises.filter(ex => ex.category === "Isolation légère"));
+
+      // 1. Add selected main lifts first
+      if (selectedMainLifts && selectedMainLifts.length > 0) {
+          const mainLiftsForToday = shuffleArray(daySpecificExercises.filter(ex => selectedMainLifts.includes(ex.name)));
+          for (const ex of mainLiftsForToday) {
+              if (canAddExercise(ex)) {
+                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
               }
           }
       }
 
-      // Step 3: Add Exercises for User-Prioritized Muscle Groups
+      // 2. Add 1-2 primary compound lifts (powerlifting or heavy secondary)
+      let compoundsAdded = 0;
+      const maxCompounds = 2;
+
+      for (const ex of powerliftingPool) {
+          if (compoundsAdded >= maxCompounds) break;
+          if (canAddExercise(ex)) {
+              addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+              compoundsAdded++;
+          }
+      }
+      for (const ex of compoundSecondaryPool) {
+          if (compoundsAdded >= maxCompounds) break;
+          if (canAddExercise(ex)) {
+              addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+              compoundsAdded++;
+          }
+      }
+
+      // 3. Add user-prioritized exercises
+      if (priorityExercises && priorityExercises.length > 0) {
+          const prioritized = shuffleArray(daySpecificExercises.filter(ex => priorityExercises.includes(ex.name) && !addedExerciseNames.has(ex.name)));
+          for (const ex of prioritized) {
+              if (canAddExercise(ex)) {
+                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+              }
+          }
+      }
+
+      // 4. Add exercises for user-prioritized muscle groups
       if (priorityMuscles && priorityMuscles.length > 0) {
-          const prioritizedByMuscle = shuffleArray(availableExercisesForCurrentDaySplit.filter(ex =>
+          const prioritizedByMuscle = shuffleArray(daySpecificExercises.filter(ex =>
               priorityMuscles.includes(ex.muscleGroup) && !addedExerciseNames.has(ex.name)
           ));
           for (const ex of prioritizedByMuscle) {
-              if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
-                  commitAddExercise(ex);
+              if (canAddExercise(ex)) {
+                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
               }
           }
       }
 
-      // Step 4: Balance Arm Isolation (Biceps/Triceps)
-      const availableBicepsIsolationForToday = shuffleArray(isolationHeavyForDay.filter(ex => ex.muscleGroup === "Biceps").concat(isolationLightForDay.filter(ex => ex.muscleGroup === "Biceps")));
-      const availableTricepsIsolationForToday = shuffleArray(isolationHeavyForDay.filter(ex => ex.muscleGroup === "Triceps").concat(isolationLightForDay.filter(ex => ex.muscleGroup === "Triceps")));
+      // 5. Balance Arm Isolation (Biceps/Triceps) if applicable to the day's split
+      const hasUpperBodyMuscles = targetMuscleGroups.some(mg => ["Pectoraux", "Dos", "Épaules", "Biceps", "Triceps"].includes(mg));
+      if (hasUpperBodyMuscles) {
+          let bicepsAdded = 0;
+          let tricepsAdded = 0;
+          const maxArmIsolation = 1;
 
-      let bicepPoolIdx = 0;
-      let tricepPoolIdx = 0;
-
-      while (exercisesAddedCount < maxExercisesPerDay && (bicepPoolIdx < availableBicepsIsolationForToday.length || tricepPoolIdx < availableTricepsIsolationForToday.length)) {
-          const nextBicep = availableBicepsIsolationForToday[bicepPoolIdx];
-          const nextTricep = availableTricepsIsolationForToday[tricepPoolIdx];
-
-          let addedThisIteration = false;
-
-          if (nextBicep && canAddExercise(nextBicep, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
-              commitAddExercise(nextBicep);
-              bicepPoolIdx++;
-              addedThisIteration = true;
+          for (const ex of isolationHeavyPool.filter(e => e.muscleGroup === "Biceps").concat(isolationLightPool.filter(e => e.muscleGroup === "Biceps"))) {
+              if (bicepsAdded >= maxArmIsolation) break;
+              if (canAddExercise(ex)) {
+                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+                  bicepsAdded++;
+              }
           }
-
-          if (nextTricep && canAddExercise(nextTricep, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
-              commitAddExercise(nextTricep);
-              tricepPoolIdx++;
-              addedThisIteration = true;
-          }
-
-          if (!addedThisIteration) {
-              break;
+          for (const ex of isolationHeavyPool.filter(e => e.muscleGroup === "Triceps").concat(isolationLightPool.filter(e => e.muscleGroup === "Triceps"))) {
+              if (tricepsAdded >= maxArmIsolation) break;
+              if (canAddExercise(ex)) {
+                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+                  tricepsAdded++;
+              }
           }
       }
 
-      // Step 5: Fill Remaining Slots with General Accessories
-      const remainingAccessoriesForDay = shuffleArray(availableExercisesForCurrentDaySplit.filter(ex =>
-          !addedExerciseNames.has(ex.name) && ex.muscleGroup !== "Biceps" && ex.muscleGroup !== "Triceps"
-      ));
-      for (const ex of remainingAccessoriesForDay) {
+      // 6. Fill remaining slots with other isolation exercises or secondary compounds
+      const remainingExercisesPool = shuffleArray(daySpecificExercises.filter(ex => !addedExerciseNames.has(ex.name)));
+      for (const ex of remainingExercisesPool) {
           if (exercisesAddedCount >= maxExercisesPerDay) break;
-          if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
-              commitAddExercise(ex);
+          if (canAddExercise(ex)) {
+              addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
           }
       }
 
-      const finalDayExercises = dayExercises.slice(0, exercisesAddedCount);
-
-
-      day.exercises = finalDayExercises.map(ex => {
-        let rpeNote = "";
-        if (ex.category === "Isolation légère") {
-           rpeNote = "RPE 10";
-        } else if (ex.category === "Isolation lourde") {
-           const rpeMap: { [key: number]: number | string } = { 1: 8, 2: 8.5, 3: 9, 4: 10 };
-           rpeNote = `RPE ${rpeMap[weekNum] || 8}`;
-        } else if (ex.category === "Compound secondaire") {
-           const rpeMap: { [key: number]: number | string } = { 1: 7, 2: 7.5, 3: 8, 4: 9 };
-           rpeNote = `RPE ${rpeMap[weekNum] || 7}`;
-        } else if (ex.category === "Exercice de powerlifting") {
-           const rpeMap: { [key: number]: number } = { 1: 6, 2: 7, 3: 8, 4: 10 };
-           rpeNote = `RPE ${rpeMap[weekNum] || 6}`;
-        }
-
-        return {
-          name: ex.name,
-          sets: baseSets.toString(),
-          reps: baseReps,
-          notes: rpeNote,
-          muscles: ex.muscles,
-        };
-      });
-
+      // Sort exercises by category priority
       day.exercises.sort((a, b) => {
           const exerciseA = allExercises.find(ex => ex.name === a.name);
           const exerciseB = allExercises.find(ex => ex.name === b.name);
-
           const priorityA = exerciseA ? categoryPriority[exerciseA.category] : 99;
           const priorityB = exerciseB ? categoryPriority[exerciseB.category] : 99;
-
           return priorityA - priorityB;
       });
-
 
       week.days.push(day);
     }
