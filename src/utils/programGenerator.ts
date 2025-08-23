@@ -202,17 +202,33 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
   const { objectif, experience, joursEntrainement, materiel, dureeMax, squat1RM, bench1RM, deadlift1RM, ohp1RM, squatRmType, benchRmType, deadliftRmType, ohpRmType, priorityMuscles, priorityExercises, selectedMainLifts } = values; // Removed 'split' from destructuring
 
   // Determine the split type based on joursEntrainement
-  let determinedSplit: "Full Body (Tout le corps)" | "Half Body (Haut / Bas)" | "Push Pull Legs"; // Removed "Autre / Pas de préférence" as it's no longer a direct outcome
+  let determinedSplit: "Full Body (Tout le corps)" | "Half Body (Haut / Bas)" | "Push Pull Legs";
+  let selectedSplitMuscles: MuscleGroup[][];
+
+  const FullBodyMuscles: MuscleGroup[] = ["Jambes", "Pectoraux", "Dos", "Épaules", "Biceps", "Triceps", "Abdos", "Mollets", "Avant-bras"];
+  const UpperMuscles: MuscleGroup[] = ["Pectoraux", "Dos", "Épaules", "Biceps", "Triceps"];
+  const LowerMuscles: MuscleGroup[] = ["Jambes", "Abdos", "Mollets", "Avant-bras"];
+  const PushMuscles: MuscleGroup[] = ["Pectoraux", "Épaules", "Triceps"];
+  const PullMuscles: MuscleGroup[] = ["Dos", "Biceps", "Avant-bras"];
+  const LegsMuscles: MuscleGroup[] = ["Jambes", "Abdos", "Mollets"];
+
+
   if (joursEntrainement >= 1 && joursEntrainement <= 3) {
       determinedSplit = "Full Body (Tout le corps)";
-  } else if (joursEntrainement === 4 || joursEntrainement === 5) {
+      selectedSplitMuscles = [FullBodyMuscles]; // All days are Full Body
+  } else if (joursEntrainement === 4) {
       determinedSplit = "Half Body (Haut / Bas)";
+      selectedSplitMuscles = [UpperMuscles, LowerMuscles, UpperMuscles, LowerMuscles]; // Upper, Lower, Upper, Lower
+  } else if (joursEntrainement === 5) {
+      determinedSplit = "Push Pull Legs"; // PPLPL
+      selectedSplitMuscles = [PushMuscles, PullMuscles, LegsMuscles, PushMuscles, LegsMuscles];
   } else if (joursEntrainement === 6) {
-      determinedSplit = "Push Pull Legs";
+      determinedSplit = "Push Pull Legs"; // PPLPPL
+      selectedSplitMuscles = [PushMuscles, PullMuscles, LegsMuscles, PushMuscles, PullMuscles, LegsMuscles];
   } else {
-      // This else block should ideally not be reached due to schema validation (max 6 days)
-      // But as a fallback, assign a default.
+      // Fallback, though schema validation should prevent this
       determinedSplit = "Full Body (Tout le corps)";
+      selectedSplitMuscles = [FullBodyMuscles];
   }
 
 
@@ -517,15 +533,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
   // Define "big strength" exercises (using updated names) for RPE calculation
   const bigStrengthExercises = ["Squat barre", "Soulevé de terre", "Développé couché", "Développé militaire barre"];
 
-  // Define muscle groups for each split type (using general MuscleGroup type)
-  const splitMuscles: { [key: string]: MuscleGroup[][] } = {
-      "Full Body (Tout le corps)": [["Jambes", "Pectoraux", "Dos", "Épaules", "Biceps", "Triceps", "Abdos", "Mollets", "Avant-bras"]], // All muscles each day
-      "Half Body (Haut / Bas)": [["Pectoraux", "Dos", "Épaules", "Biceps", "Triceps"], ["Jambes", "Abdos", "Mollets", "Avant-bras"]], // Upper/Lower split
-      "Push Pull Legs": [["Pectoraux", "Épaules", "Triceps"], ["Dos", "Biceps", "Avant-bras"], ["Jambes", "Abdos", "Mollets"]], // PPL split
-  };
-
   // Use the determined split
-  const selectedSplitMuscles = splitMuscles[determinedSplit]; // Use determinedSplit directly
   const numSplitDays = selectedSplitMuscles.length;
 
   const weeklyVolumeCap = 15; // Max sets per week for large muscle groups (used as a soft cap in current logic)
