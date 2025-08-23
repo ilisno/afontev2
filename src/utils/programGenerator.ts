@@ -66,7 +66,6 @@ interface Exercise {
   equipment: string[];
 }
 
-// Define types for nested structures
 type SetDetails = {
     setNumber: number;
     percentage: number;
@@ -156,7 +155,7 @@ const filterByEquipment = (exercises: Exercise[], availableEquipment?: string[])
     );
 };
 
-const filterByMuscleGroups = (exercises: Exercise[], targetMuscleGroups: string[]): Exercise[] => {
+const filterByMuscleGroups = (exercises: Exercise[], targetMuscleGroups: MuscleGroup[]): Exercise[] => {
     if (!targetMuscleGroups || targetMuscleGroups.length === 0) {
         return exercises;
     }
@@ -261,13 +260,13 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
 
       for (const cycleWeek of cycleWeeks) {
-          const week: WeekInProgram = { // Use type alias
+          const week: WeekInProgram = {
               weekNumber: cycleWeek.week,
               days: [],
           };
 
           for (let dayIndex = 0; dayIndex < joursEntrainement; dayIndex++) {
-              const day: DayInProgram = { // Use type alias
+              const day: DayInProgram = {
                   dayNumber: dayIndex + 1,
                   exercises: [],
               };
@@ -275,7 +274,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
               const targetMuscleGroups = selectedSplitMuscles[dayIndex % selectedSplitMuscles.length];
 
               const liftsForToday = dailyLiftsMap[dayIndex] || [];
-              const potentialDayExercises: ExerciseInProgram[] = []; // Use ExerciseInProgram
+              const potentialDayExercises: ExerciseInProgram[] = [];
               const muscleGroupDailyCount: { [key: string]: number } = {};
 
               const canAddExercise = (
@@ -340,7 +339,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
                       const exerciseObj = allExercises.find(ex => ex.name === liftName);
 
                        commitAddExercise(
-                           exerciseObj!, // Assert non-null as it's from allPossibleMainLifts
+                           exerciseObj!,
                            cycleWeek.percentages.length.toString(),
                            cycleWeek.reps.join('/'),
                            `TM: ${tm} kg`,
@@ -477,7 +476,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
 
   for (let weekNum = 1; weekNum <= 4; weekNum++) {
-    const week: WeekInProgram = { // Use type alias
+    const week: WeekInProgram = {
       weekNumber: weekNum,
       days: [],
     };
@@ -487,7 +486,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
 
     for (let dayIndex = 0; dayIndex < joursEntrainement; dayIndex++) {
-      const day: DayInProgram = { // Use type alias
+      const day: DayInProgram = {
         dayNumber: dayIndex + 1,
         exercises: [],
       };
@@ -546,30 +545,30 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       };
 
 
-      const availableExercisesForToday = filterByMuscleGroups(availableExercises, targetMuscleGroups);
+      const availableExercisesForCurrentDaySplit = filterByMuscleGroups(availableExercises, targetMuscleGroups);
 
-      const availableAccessoryExercisesForToday = availableExercisesForToday.filter(ex =>
-          ex.category === "Compound secondaire" || ex.category === "Isolation lourde" || ex.category === "Isolation légère"
-      );
-
-      const powerliftingExercises = availableExercisesForToday.filter(ex => ex.category === "Exercice de powerlifting");
-      const secondaryCompounds = availableExercisesForToday.filter(ex => ex.category === "Compound secondaire");
+      const powerliftingExercisesForDay = availableExercisesForCurrentDaySplit.filter(ex => ex.category === "Exercice de powerlifting");
+      const secondaryCompoundsForDay = availableExercisesForCurrentDaySplit.filter(ex => ex.category === "Compound secondaire");
+      const isolationHeavyForDay = availableExercisesForCurrentDaySplit.filter(ex => ex.category === "Isolation lourde");
+      const isolationLightForDay = availableExercisesForCurrentDaySplit.filter(ex => ex.category === "Isolation légère");
 
 
-      shuffleArray(powerliftingExercises).slice(0, Math.min(powerliftingExercises.length, 2)).forEach(ex => {
+      // Step 1: Add Primary Compound Lifts (Powerlifting category first, then other compounds)
+      shuffleArray(powerliftingExercisesForDay).slice(0, Math.min(powerliftingExercisesForDay.length, 2)).forEach(ex => {
           if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
               commitAddExercise(ex);
           }
       });
 
-      shuffleArray(secondaryCompounds).slice(0, Math.min(secondaryCompounds.length, 3)).forEach(ex => {
+      shuffleArray(secondaryCompoundsForDay).slice(0, Math.min(secondaryCompoundsForDay.length, 2)).forEach(ex => {
           if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
               commitAddExercise(ex);
           }
       });
 
+      // Step 2: Add User-Prioritized Exercises
       if (priorityExercises && priorityExercises.length > 0) {
-          const prioritized = shuffleArray(availableAccessoryExercisesForToday.filter(ex => priorityExercises.includes(ex.name)));
+          const prioritized = shuffleArray(availableExercisesForCurrentDaySplit.filter(ex => priorityExercises.includes(ex.name) && !addedExerciseNames.has(ex.name)));
           for (const ex of prioritized) {
               if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
                   commitAddExercise(ex);
@@ -577,8 +576,9 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           }
       }
 
+      // Step 3: Add Exercises for User-Prioritized Muscle Groups
       if (priorityMuscles && priorityMuscles.length > 0) {
-          const prioritizedByMuscle = shuffleArray(availableAccessoryExercisesForToday.filter(ex =>
+          const prioritizedByMuscle = shuffleArray(availableExercisesForCurrentDaySplit.filter(ex =>
               priorityMuscles.includes(ex.muscleGroup) && !addedExerciseNames.has(ex.name)
           ));
           for (const ex of prioritizedByMuscle) {
@@ -588,33 +588,42 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           }
       }
 
-      const availableBicepsIsolationForToday = shuffleArray(availableAccessoryExercisesForToday.filter(ex => ex.muscleGroup === "Biceps"));
-      const availableTricepsIsolationForToday = shuffleArray(availableAccessoryExercisesForToday.filter(ex => ex.muscleGroup === "Triceps"));
+      // Step 4: Balance Arm Isolation (Biceps/Triceps)
+      const availableBicepsIsolationForToday = shuffleArray(isolationHeavyForDay.filter(ex => ex.muscleGroup === "Biceps").concat(isolationLightForDay.filter(ex => ex.muscleGroup === "Biceps")));
+      const availableTricepsIsolationForToday = shuffleArray(isolationHeavyForDay.filter(ex => ex.muscleGroup === "Triceps").concat(isolationLightForDay.filter(ex => ex.muscleGroup === "Triceps")));
 
       let bicepPoolIdx = 0;
       let tricepPoolIdx = 0;
 
-      while (exercisesAddedCount < maxExercisesPerDay && bicepPoolIdx < availableBicepsIsolationForToday.length && tricepPoolIdx < availableTricepsIsolationForToday.length) {
+      while (exercisesAddedCount < maxExercisesPerDay && (bicepPoolIdx < availableBicepsIsolationForToday.length || tricepPoolIdx < availableTricepsIsolationForToday.length)) {
           const nextBicep = availableBicepsIsolationForToday[bicepPoolIdx];
           const nextTricep = availableTricepsIsolationForToday[tricepPoolIdx];
 
-          const canAddBicep = canAddExercise(nextBicep, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups);
-          const canAddTricep = canAddExercise(nextTricep, exercisesAddedCount + (canAddBicep ? 1 : 0), addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups);
+          let addedThisIteration = false;
 
-          if (canAddBicep && canAddTricep) {
+          if (nextBicep && canAddExercise(nextBicep, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
               commitAddExercise(nextBicep);
-              commitAddExercise(nextTricep);
               bicepPoolIdx++;
+              addedThisIteration = true;
+          }
+
+          if (nextTricep && canAddExercise(nextTricep, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
+              commitAddExercise(nextTricep);
               tricepPoolIdx++;
-          } else {
+              addedThisIteration = true;
+          }
+
+          if (!addedThisIteration) {
               break;
           }
       }
 
-      const remainingAccessoriesForToday = shuffleArray(availableAccessoryExercisesForToday.filter(ex =>
+      // Step 5: Fill Remaining Slots with General Accessories
+      const remainingAccessoriesForDay = shuffleArray(availableExercisesForCurrentDaySplit.filter(ex =>
           !addedExerciseNames.has(ex.name) && ex.muscleGroup !== "Biceps" && ex.muscleGroup !== "Triceps"
       ));
-      for (const ex of remainingAccessoriesForToday) {
+      for (const ex of remainingAccessoriesForDay) {
+          if (exercisesAddedCount >= maxExercisesPerDay) break;
           if (canAddExercise(ex, exercisesAddedCount, addedExerciseNames, muscleGroupDailyCount, targetMuscleGroups)) {
               commitAddExercise(ex);
           }
