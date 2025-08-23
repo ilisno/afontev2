@@ -574,14 +574,60 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
       const daySpecificExercises = availableExercises.filter(ex => targetMuscleGroups.includes(ex.muscleGroup));
 
+      // Helper to try and add a specific exercise from a pool
+      const tryAddSpecificExercise = (
+          exerciseName: string,
+          pool: Exercise[],
+          canAdd: (ex: Exercise) => boolean,
+          add: (ex: Exercise) => void
+      ): boolean => {
+          const exercise = pool.find(ex => ex.name === exerciseName);
+          if (exercise && canAdd(exercise)) {
+              add(exercise);
+              return true;
+          }
+          return false;
+      };
+
+      // Create mutable pools for the current day, filtered by equipment and target muscle groups
       let powerliftingPool = shuffleArray(daySpecificExercises.filter(ex => ex.category === "Exercice de powerlifting"));
       let compoundSecondaryPool = shuffleArray(daySpecificExercises.filter(ex => ex.category === "Compound secondaire"));
       let isolationHeavyPool = shuffleArray(daySpecificExercises.filter(ex => ex.category === "Isolation lourde"));
       let isolationLightPool = shuffleArray(daySpecificExercises.filter(ex => ex.category === "Isolation légère"));
 
-      // 1. Add selected main lifts first
+
+      // --- NEW: Specific Legs Day Logic ---
+      if (targetMuscleGroups.includes("Jambes")) {
+          // Prioritize Squat barre
+          tryAddSpecificExercise("Squat barre", powerliftingPool, canAddExercise, addExerciseToDay);
+
+          // Prioritize Hamstring Isolation (Leg curl first, then Soulevé de terre roumain)
+          let hamstringAdded = false;
+          if (!hamstringAdded) {
+              hamstringAdded = tryAddSpecificExercise("Leg curl", isolationHeavyPool, canAddExercise, addExerciseToDay);
+          }
+          if (!hamstringAdded) {
+              hamstringAdded = tryAddSpecificExercise("Soulevé de terre roumain", compoundSecondaryPool, canAddExercise, addExerciseToDay);
+          }
+
+          // If time permits, add Calf raises
+          tryAddSpecificExercise("Calf raises", isolationLightPool, canAddExercise, addExerciseToDay);
+
+          // If time permits, add Lunges (Fentes haltères first, then Split squat bulgare)
+          let lungesAdded = false;
+          if (!lungesAdded) {
+              lungesAdded = tryAddSpecificExercise("Fentes haltères", compoundSecondaryPool, canAddExercise, addExerciseToDay);
+          }
+          if (!lungesAdded) {
+              lungesAdded = tryAddSpecificExercise("Split squat bulgare", compoundSecondaryPool, canAddExercise, addExerciseToDay);
+          }
+      }
+      // --- END NEW: Specific Legs Day Logic ---
+
+
+      // 1. Add selected main lifts (if not already added by Legs logic)
       if (selectedMainLifts && selectedMainLifts.length > 0) {
-          const mainLiftsForToday = shuffleArray(daySpecificExercises.filter(ex => selectedMainLifts.includes(ex.name)));
+          const mainLiftsForToday = shuffleArray(daySpecificExercises.filter(ex => selectedMainLifts.includes(ex.name) && !addedExerciseNames.has(ex.name)));
           for (const ex of mainLiftsForToday) {
               if (canAddExercise(ex)) {
                   addExerciseToDay(ex);
@@ -593,14 +639,14 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       let compoundsAdded = 0;
       const maxCompounds = 2;
 
-      for (const ex of powerliftingPool) {
+      for (const ex of powerliftingPool.filter(ex => !addedExerciseNames.has(ex.name))) { // Filter out already added
           if (compoundsAdded >= maxCompounds) break;
           if (canAddExercise(ex)) {
               addExerciseToDay(ex);
               compoundsAdded++;
           }
       }
-      for (const ex of compoundSecondaryPool) {
+      for (const ex of compoundSecondaryPool.filter(ex => !addedExerciseNames.has(ex.name))) { // Filter out already added
           if (compoundsAdded >= maxCompounds) break;
           if (canAddExercise(ex)) {
               addExerciseToDay(ex);
@@ -637,8 +683,10 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           let tricepsAdded = 0;
           const maxArmIsolation = 1; // Aim for one bicep and one tricep exercise
 
-          const availableBiceps = isolationHeavyPool.filter(e => e.muscleGroup === "Biceps").concat(isolationLightPool.filter(e => e.muscleGroup === "Biceps"));
-          const availableTriceps = isolationHeavyPool.filter(e => e.muscleGroup === "Triceps").concat(isolationLightPool.filter(e => e.muscleGroup === "Triceps"));
+          const availableBiceps = isolationHeavyPool.filter(e => e.muscleGroup === "Biceps" && !addedExerciseNames.has(e.name))
+                                  .concat(isolationLightPool.filter(e => e.muscleGroup === "Biceps" && !addedExerciseNames.has(e.name)));
+          const availableTriceps = isolationHeavyPool.filter(e => e.muscleGroup === "Triceps" && !addedExerciseNames.has(e.name))
+                                   .concat(isolationLightPool.filter(e => e.muscleGroup === "Triceps" && !addedExerciseNames.has(e.name)));
 
           const shuffledBiceps = shuffleArray(availableBiceps);
           const shuffledTriceps = shuffleArray(availableTriceps);
