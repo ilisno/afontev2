@@ -230,7 +230,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
   const availableExercises = filterByEquipment(allExercises, materiel);
 
-  const maxExercisesPerDay = 8;
+  const maxExercisesPerDay = 8; // Max exercises to aim for
   const limitedDailyExerciseGroups: MuscleGroup[] = ["Jambes", "Pectoraux", "Dos"];
 
   const program: Program = {
@@ -485,11 +485,16 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
 
 
   const baseReps = objectif === "Sèche / Perte de Gras" ? "12-15" : "8-12";
-  const baseSets = 3;
+  const timePerCompoundSet = 5; // minutes
+  const timePerIsolationSet = 3; // minutes
+
+  // Determine sets per exercise based on duration
+  const setsPerExercise = (dureeMax <= 60) ? 2 : 3;
+
 
   const numSplitDays = selectedSplitMuscles.length;
 
-  const weeklyVolumeCap = 15;
+  const weeklyVolumeCap = 15; // This cap might need adjustment or removal if time-based allocation is primary
 
 
   for (let weekNum = 1; weekNum <= 4; weekNum++) {
@@ -508,31 +513,24 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
         exercises: [],
       };
 
+      let currentTimeSpent = 0; // Track time spent for the current day
       const muscleGroupDailyCount: { [key: string]: number } = {};
 
       const targetMuscleGroups = selectedSplitMuscles[dayIndex % numSplitDays];
 
       const addedExerciseNames = new Set<string>();
-      let exercisesAddedCount = 0;
 
-      const addExerciseToDay = (exercise: Exercise, sets: string, reps: string, notes: string) => {
-        day.exercises.push({
-          name: exercise.name,
-          sets: sets,
-          reps: reps,
-          notes: notes,
-          muscles: exercise.muscles,
-        });
-        addedExerciseNames.add(exercise.name);
-        exercisesAddedCount++;
-        if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
-          muscleGroupDailyCount[exercise.muscleGroup] = (muscleGroupDailyCount[exercise.muscleGroup] || 0) + 1;
-          weeklyVolume[exercise.muscleGroup] = (weeklyVolume[exercise.muscleGroup] || 0) + parseInt(sets, 10);
-        }
+      const getEstimatedExerciseTime = (exercise: Exercise, sets: number): number => {
+          const timePerSet = (exercise.category === "Exercice de powerlifting" || exercise.category === "Compound secondaire")
+              ? timePerCompoundSet
+              : timePerIsolationSet;
+          return sets * timePerSet;
       };
 
       const canAddExercise = (exercise: Exercise): boolean => {
-        if (exercisesAddedCount >= maxExercisesPerDay || addedExerciseNames.has(exercise.name)) {
+        const estimatedTime = getEstimatedExerciseTime(exercise, setsPerExercise);
+
+        if (day.exercises.length >= maxExercisesPerDay || addedExerciseNames.has(exercise.name) || (currentTimeSpent + estimatedTime > dureeMax)) {
           return false;
         }
         if (!targetMuscleGroups.includes(exercise.muscleGroup)) {
@@ -548,12 +546,30 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
             return false;
           }
         }
+        // The weekly volume cap might become less relevant with time-based allocation,
+        // but keeping it as a secondary constraint for now.
         if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
-            if ((weeklyVolume[exercise.muscleGroup] || 0) + baseSets > weeklyVolumeCap) {
+            if ((weeklyVolume[exercise.muscleGroup] || 0) + setsPerExercise > weeklyVolumeCap) {
                 return false;
             }
         }
         return true;
+      };
+
+      const addExerciseToDay = (exercise: Exercise) => {
+        day.exercises.push({
+          name: exercise.name,
+          sets: setsPerExercise.toString(),
+          reps: baseReps,
+          notes: getRpeNote(exercise.category, weekNum, objectif),
+          muscles: exercise.muscles,
+        });
+        addedExerciseNames.add(exercise.name);
+        currentTimeSpent += getEstimatedExerciseTime(exercise, setsPerExercise);
+        if (limitedDailyExerciseGroups.includes(exercise.muscleGroup)) {
+          muscleGroupDailyCount[exercise.muscleGroup] = (muscleGroupDailyCount[exercise.muscleGroup] || 0) + 1;
+          weeklyVolume[exercise.muscleGroup] = (weeklyVolume[exercise.muscleGroup] || 0) + setsPerExercise;
+        }
       };
 
       const daySpecificExercises = availableExercises.filter(ex => targetMuscleGroups.includes(ex.muscleGroup));
@@ -568,7 +584,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           const mainLiftsForToday = shuffleArray(daySpecificExercises.filter(ex => selectedMainLifts.includes(ex.name)));
           for (const ex of mainLiftsForToday) {
               if (canAddExercise(ex)) {
-                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+                  addExerciseToDay(ex);
               }
           }
       }
@@ -580,14 +596,14 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       for (const ex of powerliftingPool) {
           if (compoundsAdded >= maxCompounds) break;
           if (canAddExercise(ex)) {
-              addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+              addExerciseToDay(ex);
               compoundsAdded++;
           }
       }
       for (const ex of compoundSecondaryPool) {
           if (compoundsAdded >= maxCompounds) break;
           if (canAddExercise(ex)) {
-              addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+              addExerciseToDay(ex);
               compoundsAdded++;
           }
       }
@@ -597,7 +613,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           const prioritized = shuffleArray(daySpecificExercises.filter(ex => priorityExercises.includes(ex.name) && !addedExerciseNames.has(ex.name)));
           for (const ex of prioritized) {
               if (canAddExercise(ex)) {
-                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+                  addExerciseToDay(ex);
               }
           }
       }
@@ -609,7 +625,7 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
           ));
           for (const ex of prioritizedByMuscle) {
               if (canAddExercise(ex)) {
-                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+                  addExerciseToDay(ex);
               }
           }
       }
@@ -619,19 +635,27 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       if (hasUpperBodyMuscles) {
           let bicepsAdded = 0;
           let tricepsAdded = 0;
-          const maxArmIsolation = 1;
+          const maxArmIsolation = 1; // Aim for one bicep and one tricep exercise
 
-          for (const ex of isolationHeavyPool.filter(e => e.muscleGroup === "Biceps").concat(isolationLightPool.filter(e => e.muscleGroup === "Biceps"))) {
+          const availableBiceps = isolationHeavyPool.filter(e => e.muscleGroup === "Biceps").concat(isolationLightPool.filter(e => e.muscleGroup === "Biceps"));
+          const availableTriceps = isolationHeavyPool.filter(e => e.muscleGroup === "Triceps").concat(isolationLightPool.filter(e => e.muscleGroup === "Triceps"));
+
+          const shuffledBiceps = shuffleArray(availableBiceps);
+          const shuffledTriceps = shuffleArray(availableTriceps);
+
+          // Try to add one bicep exercise
+          for (const ex of shuffledBiceps) {
               if (bicepsAdded >= maxArmIsolation) break;
               if (canAddExercise(ex)) {
-                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+                  addExerciseToDay(ex);
                   bicepsAdded++;
               }
           }
-          for (const ex of isolationHeavyPool.filter(e => e.muscleGroup === "Triceps").concat(isolationLightPool.filter(e => e.muscleGroup === "Triceps"))) {
+          // Try to add one tricep exercise
+          for (const ex of shuffledTriceps) {
               if (tricepsAdded >= maxArmIsolation) break;
               if (canAddExercise(ex)) {
-                  addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+                  addExerciseToDay(ex);
                   tricepsAdded++;
               }
           }
@@ -640,9 +664,9 @@ export const generateProgramClientSide = (values: ProgramFormData): Program => {
       // 6. Fill remaining slots with other isolation exercises or secondary compounds
       const remainingExercisesPool = shuffleArray(daySpecificExercises.filter(ex => !addedExerciseNames.has(ex.name)));
       for (const ex of remainingExercisesPool) {
-          if (exercisesAddedCount >= maxExercisesPerDay) break;
+          if (day.exercises.length >= maxExercisesPerDay) break; // Check max exercises again
           if (canAddExercise(ex)) {
-              addExerciseToDay(ex, baseSets.toString(), baseReps, getRpeNote(ex.category, weekNum, objectif));
+              addExerciseToDay(ex);
           }
       }
 
