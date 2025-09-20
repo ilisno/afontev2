@@ -11,16 +11,13 @@ import BlogPostDetail from "./pages/BlogPostDetail";
 import CoachVirtuel from "./pages/CoachVirtuel";
 import MonEspace from "./pages/MonEspace";
 import Login from "./pages/Login";
-// Removed: import Tarifs from "./pages/Tarifs";
-// Removed: import TarifsTest from "./pages/TarifTest";
-// Removed: import Merci1 from "./pages/Merci1";
-// Removed: import Merci2 from "./pages/Merci2";
 import MentionsLegales from "./pages/MentionsLegales";
 import CGV from "./pages/CGV";
 import Confidentialite from "./pages/Confidentialite";
 import APropos from "./pages/APropos";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
+import NutrimuscleRedirect from "./pages/NutrimuscleRedirect"; // Import the new redirect component
 import { PopupProvider } from "./contexts/PopupContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
@@ -43,11 +40,7 @@ const App = () => (
               <Route path="/coach-virtuel" element={<CoachVirtuel />} />
               <Route path="/mon-espace" element={<MonEspace />} />
               <Route path="/login" element={<Login />} />
-              {/* Removed payment-related routes */}
-              {/* <Route path="/tarifs" element={<Tarifs />} /> */}
-              {/* <Route path="/tariftest" element={<TarifsTest />} /> */}
-              {/* <Route path="/merci1" element={<Merci1 />} /> */}
-              {/* <Route path="/merci2" element={<Merci2 />} /> */}
+              <Route path="/nutrimuscle" element={<NutrimuscleRedirect />} /> {/* New route for Nutrimuscle redirect */}
               <Route path="/mentions-legales" element={<MentionsLegales />} />
               <Route path="/cgv" element={<CGV />} />
               <Route path="/confidentialite" element={<Confidentialite />} />
